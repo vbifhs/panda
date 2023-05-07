@@ -322,6 +322,17 @@ static int hyundai_canfd_fwd_hook(int bus_num, int addr) {
     // LKAS for HDA2, LFA for HDA1
     int is_lkas_msg = (((addr == 0x50) || (addr == 0x2a4)) && hyundai_canfd_hda2);
     int is_lfa_msg = ((addr == 0x12a) && !hyundai_canfd_hda2);
+    int unknown_msgs = ((addr == 272) || (addr == 571) || (addr == 572) ||
+                        (addr == 573) || (addr == 574) || (addr == 575) ||
+                        (addr == 576) || (addr == 577) || (addr == 864) ||
+                        (addr == 896) || (addr == 357) || (addr == 578) ||
+                        (addr == 579) || (addr == 580) || (addr == 581) ||
+                        (addr == 582) || (addr == 583) || (addr == 584) ||
+                        (addr == 865) || (addr == 560) || (addr == 565) ||
+                        (addr == 566) || (addr == 567) || (addr == 568) ||
+                        (addr == 569) || (addr == 570) || (addr == 866) ||
+                        (addr == 867) || (addr == 869) || (addr == 868) ||
+                        (addr == 870));
 
     // HUD icons
     int is_lfahda_msg = ((addr == 0x1e0) && !hyundai_canfd_hda2);
@@ -329,7 +340,7 @@ static int hyundai_canfd_fwd_hook(int bus_num, int addr) {
     // CRUISE_INFO for non-HDA2, we send our own longitudinal commands
     int is_scc_msg = ((addr == 0x1a0) && hyundai_longitudinal && !hyundai_canfd_hda2);
 
-    int block_msg = is_lkas_msg || is_lfa_msg || is_lfahda_msg || is_scc_msg;
+    int block_msg = is_lkas_msg || is_lfa_msg || is_lfahda_msg || is_scc_msg || unknown_msgs;
     if (!block_msg) {
       bus_fwd = 0;
     }
