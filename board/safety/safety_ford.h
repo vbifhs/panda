@@ -3,6 +3,7 @@
 #define MSG_EngVehicleSpThrottle  0x204   // RX from PCM, for driver throttle input
 #define MSG_DesiredTorqBrk        0x213   // RX from ABS, for standstill state
 #define MSG_BrakeSysFeatures      0x415   // RX from ABS, for vehicle speed
+#define MSG_SteeringPinion_Data   0x7e    // RX from PSCM
 #define MSG_EngVehicleSpThrottle2 0x202   // RX from PCM, for second vehicle speed
 #define MSG_Yaw_Data_FD1          0x91    // RX from RCM, for yaw rate
 #define MSG_Steering_Data_FD1     0x083   // TX by OP, various driver switches and LKAS/CC buttons
@@ -24,6 +25,7 @@ const CanMsg FORD_TX_MSGS[] = {
   {MSG_IPMA_Data, 0, 8},
   {MSG_EngVehicleSpThrottle2, 2, 8},
   {MSG_BrakeSysFeatures, 2, 8},
+  {MSG_SteeringPinion_Data, 2, 8},
 };
 #define FORD_TX_LEN (sizeof(FORD_TX_MSGS) / sizeof(FORD_TX_MSGS[0]))
 
@@ -287,7 +289,7 @@ static int ford_fwd_hook(int bus_num, int addr) {
   switch (bus_num) {
     case FORD_MAIN_BUS: {
       // Forward all traffic from bus 0 onward, except 2nd PCM speed message
-      if ((addr != MSG_EngVehicleSpThrottle2) && (addr != MSG_BrakeSysFeatures)) {
+      if ((addr != MSG_EngVehicleSpThrottle2) && (addr != MSG_BrakeSysFeatures) && (addr != MSG_SteeringPinion_Data)) {
         bus_fwd = FORD_CAM_BUS;
       }
       break;
