@@ -22,6 +22,7 @@ const CanMsg FORD_TX_MSGS[] = {
   {MSG_Lane_Assist_Data1, 0, 8},
   {MSG_LateralMotionControl, 0, 8},
   {MSG_IPMA_Data, 0, 8},
+  {MSG_EngVehicleSpThrottle2, 2, 8},
 };
 #define FORD_TX_LEN (sizeof(FORD_TX_MSGS) / sizeof(FORD_TX_MSGS[0]))
 
@@ -284,8 +285,10 @@ static int ford_fwd_hook(int bus_num, int addr) {
 
   switch (bus_num) {
     case FORD_MAIN_BUS: {
-      // Forward all traffic from bus 0 onward
-      bus_fwd = FORD_CAM_BUS;
+      // Forward all traffic from bus 0 onward, except 2nd PCM speed message
+      if (addr != MSG_EngVehicleSpThrottle2) {
+        bus_fwd = FORD_CAM_BUS;
+      }
       break;
     }
     case FORD_CAM_BUS: {
