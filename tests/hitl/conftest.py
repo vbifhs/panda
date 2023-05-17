@@ -121,7 +121,7 @@ def func_fixture_panda(request, module_panda):
       pytest.skip(f"Not applicable to {skip_types}")
 
   # TODO: reset is slow (2+ seconds)
-  p.reset()
+  #p.reset()
 
   # Run test
   yield p

@@ -11,8 +11,9 @@ void llspi_mosi_dma(uint8_t *addr, int len) {
     (void)dat;
   }
 
-  // clear stuff
-  SPI4->IFCR |= SPI_IFCR_UDRC | SPI_IFCR_OVRC;
+  // clear all pending
+  SPI4->IFCR |= (0x1FF << 3U);
+  register_set(&(SPI4->IER), 0, 0x3FFU);
 
   // setup destination and length
   register_set(&(DMA2_Stream2->M0AR), (uint32_t)addr, 0xFFFFFFFFU);
@@ -26,23 +27,26 @@ void llspi_mosi_dma(uint8_t *addr, int len) {
 
 // panda -> master DMA start
 void llspi_miso_dma(uint8_t *addr, int len) {
-  // disable DMA
+  // disable DMA + SPI
   DMA2_Stream3->CR &= ~DMA_SxCR_EN;
   register_clear_bits(&(SPI4->CFG1), SPI_CFG1_TXDMAEN);
+  register_clear_bits(&(SPI4->CR1), SPI_CR1_SPE);
 
   // setup source and length
   register_set(&(DMA2_Stream3->M0AR), (uint32_t)addr, 0xFFFFFFFFU);
   DMA2_Stream3->NDTR = len;
 
   // clear under-run while we were reading
-  SPI4->IFCR |= SPI_IFCR_UDRC;
+  SPI4->IFCR |= (0x1FF << 3U);
+  register_set(&(SPI4->IER), 0, 0x3FFU);
 
-  // setup interrupt on TXC and UDR
+  // setup interrupt on TXC (EOTIE) and UDR
   register_set(&(SPI4->IER), (1U << SPI_IER_EOTIE_Pos) | (1U << SPI_IER_UDRIE_Pos), 0x3FFU);
 
   // enable DMA
   register_set_bits(&(SPI4->CFG1), SPI_CFG1_TXDMAEN);
   DMA2_Stream3->CR |= DMA_SxCR_EN;
+  register_set_bits(&(SPI4->CR1), SPI_CR1_SPE);
 }
 
 // master -> panda DMA finished
@@ -70,21 +74,18 @@ void DMA2_Stream3_IRQ_Handler(void) {
 void SPI4_IRQ_Handler(void) {
   ENTER_CRITICAL();
 
-  //print("IRQ SR "); puth(SPI4->SR); print("\n");
-
-  // clear flag
-  SPI4->IFCR |= SPI_IFCR_EOTC;
+  // clear all pending
+  SPI4->IFCR |= (0x1FF << 3U);
 
   // handle underrun
   if (((SPI4->SR & SPI_SR_UDR) != 0)) {
     print("SPI: clearing underrun\n");
-    SPI4->IFCR |= SPI_IFCR_UDRC;
-    register_set(&(SPI4->IER), 0, 0x3FFU);
-
-    register_clear_bits(&(SPI4->CR1), SPI_CR1_SPE);
-
-    // TODO: turn off spi?
-    spi_tx_done(true);
+    print("IRQ SR "); puth(SPI4->SR); print("\n");
+    print("TXC: "); puth((SPI4->SR & SPI_SR_TXC)); print("\n");
+    print("spi_tx_dma_done: "); puth2(spi_tx_dma_done); print("\n");
+    if (!spi_tx_dma_done) {
+      spi_tx_done(true);
+    }
   }
 
   // handle TX complete
