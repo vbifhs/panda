@@ -60,6 +60,10 @@ void DMA2_Stream3_IRQ_Handler(void) {
   (void)dat;
   SPI1->DR = 0U;
 
+  if (timed_out) {
+    print("SPI: TX timeout\n");
+  }
+
   spi_handle_tx(timed_out);
 }
 

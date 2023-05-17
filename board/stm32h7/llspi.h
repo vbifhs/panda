@@ -11,6 +11,9 @@ void llspi_mosi_dma(uint8_t *addr, int len) {
     (void)dat;
   }
 
+  // clear stuff
+  SPI4->IFCR |= SPI_IFCR_UDRC | SPI_IFCR_OVRC;
+
   // setup destination and length
   register_set(&(DMA2_Stream2->M0AR), (uint32_t)addr, 0xFFFFFFFFU);
   DMA2_Stream2->NDTR = len;
@@ -34,8 +37,8 @@ void llspi_miso_dma(uint8_t *addr, int len) {
   // clear under-run while we were reading
   SPI4->IFCR |= SPI_IFCR_UDRC;
 
-  // setup interrupt on TXC
-  register_set(&(SPI4->IER), (1U << SPI_IER_EOTIE_Pos), 0x3FFU);
+  // setup interrupt on TXC and UDR
+  register_set(&(SPI4->IER), (1U << SPI_IER_EOTIE_Pos) | (1U << SPI_IER_UDRIE_Pos), 0x3FFU);
 
   // enable DMA
   register_set_bits(&(SPI4->CFG1), SPI_CFG1_TXDMAEN);
@@ -67,9 +70,24 @@ void DMA2_Stream3_IRQ_Handler(void) {
 void SPI4_IRQ_Handler(void) {
   ENTER_CRITICAL();
 
+  //print("IRQ SR "); puth(SPI4->SR); print("\n");
+
   // clear flag
   SPI4->IFCR |= SPI_IFCR_EOTC;
 
+  // handle underrun
+  if (((SPI4->SR & SPI_SR_UDR) != 0)) {
+    print("SPI: clearing underrun\n");
+    SPI4->IFCR |= SPI_IFCR_UDRC;
+    register_set(&(SPI4->IER), 0, 0x3FFU);
+
+    register_clear_bits(&(SPI4->CR1), SPI_CR1_SPE);
+
+    // TODO: turn off spi?
+    spi_handle_tx(true);
+  }
+
+  // handle TX complete
   if (spi_tx_dma_done && ((SPI4->SR & SPI_SR_TXC) != 0)) {
     spi_tx_dma_done = false;
 
