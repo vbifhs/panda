@@ -51,7 +51,7 @@ void DMA2_Stream2_IRQ_Handler(void) {
   ENTER_CRITICAL();
   DMA2->LIFCR = DMA_LIFCR_CTCIF2;
 
-  spi_handle_rx();
+  spi_rx_done();
 
   EXIT_CRITICAL();
 }
@@ -84,7 +84,7 @@ void SPI4_IRQ_Handler(void) {
     register_clear_bits(&(SPI4->CR1), SPI_CR1_SPE);
 
     // TODO: turn off spi?
-    spi_handle_tx(true);
+    spi_tx_done(true);
   }
 
   // handle TX complete
@@ -95,7 +95,7 @@ void SPI4_IRQ_Handler(void) {
 
     volatile uint8_t dat = SPI4->TXDR;
     (void)dat;
-    spi_handle_tx(false);
+    spi_tx_done(false);
   }
 
   EXIT_CRITICAL();

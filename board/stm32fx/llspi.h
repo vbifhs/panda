@@ -36,7 +36,7 @@ void DMA2_Stream2_IRQ_Handler(void) {
   ENTER_CRITICAL();
   DMA2->LIFCR = DMA_LIFCR_CTCIF2;
 
-  spi_handle_rx();
+  spi_rx_done();
 
   EXIT_CRITICAL();
 }
@@ -64,7 +64,7 @@ void DMA2_Stream3_IRQ_Handler(void) {
     print("SPI: TX timeout\n");
   }
 
-  spi_handle_tx(timed_out);
+  spi_tx_done(timed_out);
 }
 
 // ***************************** SPI init *****************************

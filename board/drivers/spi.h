@@ -64,9 +64,9 @@ bool check_checksum(uint8_t *data, uint16_t len) {
   return checksum == 0U;
 }
 
-void spi_handle_rx(void) {
+void spi_rx_done(void) {
   uint16_t response_len = 0U;
-  uint8_t next_rx_state = SPI_STATE_HEADER;
+  uint8_t next_rx_state = SPI_STATE_HEADER_NACK;
   bool checksum_valid = false;
 
   // parse header
@@ -170,7 +170,7 @@ void spi_handle_rx(void) {
   }
 }
 
-void spi_handle_tx(bool reset) {
+void spi_tx_done(bool reset) {
   if ((spi_state == SPI_STATE_HEADER_NACK) || reset) {
     // Reset state
     spi_state = SPI_STATE_HEADER;
