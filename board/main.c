@@ -173,6 +173,13 @@ void tick_handler(void) {
         print("tx3:"); puth4(can_tx3_q.r_ptr); print("-"); puth4(can_tx3_q.w_ptr); print("\n");
       #endif
 
+      #ifdef STM32H7
+        print("SR: "); puth(SPI4->SR); print("\n");
+        print("state: "); puth2(spi_state); print(" ");
+        print("ep: "); puth2(spi_endpoint); print(" ");
+        print("\n");
+      #endif
+
       // set green LED to be controls allowed
       current_board->set_led(LED_GREEN, controls_allowed | green_led_enabled);
 
