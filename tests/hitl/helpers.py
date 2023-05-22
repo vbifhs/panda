@@ -13,6 +13,7 @@ def time_many_sends(p, bus, p_recv=None, msg_count=100, two_pandas=False):
 
   start_time = time.monotonic()
   p.can_send_many(to_send)
+  print("send took", time.monotonic() - start_time)
   r = []
   r_echo = []
   r_len_expected = msg_count if two_pandas else msg_count * 2

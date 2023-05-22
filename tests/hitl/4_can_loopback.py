@@ -10,7 +10,7 @@ from panda import Panda
 from panda.tests.hitl.conftest import PandaGroup, PARTIAL_TESTS
 from panda.tests.hitl.helpers import time_many_sends, clear_can_buffers
 
-@flaky(max_runs=3, min_passes=1)
+#@flaky(max_runs=3, min_passes=1)
 def test_send_recv(p, panda_jungle):
   def test(p_send, p_recv):
     p_send.set_can_loopback(False)
@@ -25,8 +25,6 @@ def test_send_recv(p, panda_jungle):
       for speed in (10, 20, 50, 100, 125, 250, 500, 1000):
         p_send.set_can_speed_kbps(bus, speed)
         p_recv.set_can_speed_kbps(bus, speed)
-        time.sleep(0.1)
-
         clear_can_buffers(p_send)
         clear_can_buffers(p_recv)
         time.sleep(0.1)
