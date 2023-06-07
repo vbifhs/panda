@@ -87,6 +87,24 @@ void init_interrupts(bool check_rate_limit){
     interrupts[i].handler = unused_interrupt_handler;
   }
 
+#ifdef STM32H7
+  NVIC_SetPriorityGrouping(4);
+  uint32_t priorityGroup = NVIC_GetPriorityGrouping();
+  uint32_t p3 = NVIC_EncodePriority(priorityGroup, 3, 0);
+  uint32_t p2 = NVIC_EncodePriority(priorityGroup, 2, 0);
+  uint32_t p1 = NVIC_EncodePriority(priorityGroup, 1, 0);
+  for (uint16_t i = 0U; i < NUM_INTERRUPTS; i++) {
+    if ((i == FDCAN1_IT0_IRQn) || (i == FDCAN2_IT0_IRQn) || (i == FDCAN3_IT0_IRQn) ||
+        (i == FDCAN1_IT1_IRQn) || (i == FDCAN2_IT1_IRQn) || (i == FDCAN3_IT1_IRQn)) {
+      NVIC_SetPriority(i, p2);
+    } else if ((i == SPI4_IRQn) || (i == DMA2_Stream2_IRQn) || (DMA2_Stream3_IRQn)) {
+      NVIC_SetPriority(i, p1);
+    } else {
+      NVIC_SetPriority(i, p3);
+    }
+  }
+#endif
+
   // Init interrupt timer for a 1s interval
   interrupt_timer_init();
 }
