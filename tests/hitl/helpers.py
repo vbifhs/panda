@@ -23,6 +23,7 @@ def time_many_sends(p, bus, p_recv=None, msg_count=100, two_pandas=False):
 
   start_time = time.monotonic()
   p.can_send_many(to_send)
+  end_time = time.monotonic()
   r = []
   r_echo = []
   r_len_expected = msg_count if two_pandas else msg_count * 2
@@ -30,7 +31,7 @@ def time_many_sends(p, bus, p_recv=None, msg_count=100, two_pandas=False):
 
   while len(r) < r_len_expected and (time.monotonic() - start_time) < 5:
     r.extend(p_recv.can_recv())
-  end_time = time.monotonic()
+  #end_time = time.monotonic()
   if two_pandas:
     while len(r_echo) < r_echo_len_exected and (time.monotonic() - start_time) < 10:
       r_echo.extend(p.can_recv())

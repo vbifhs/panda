@@ -182,8 +182,11 @@ class PandaSpiHandle(BaseHandle):
   # TODO: implement these properly
   def bulkWrite(self, endpoint: int, data: List[int], timeout: int = TIMEOUT) -> int:
     with self.dev.acquire() as spi:
+      #logging.getLogger().setLevel(logging.DEBUG)
+      #print(endpoint, math.ceil(len(data) / XFER_SIZE))
       for x in range(math.ceil(len(data) / XFER_SIZE)):
         self._transfer(spi, endpoint, data[XFER_SIZE*x:XFER_SIZE*(x+1)], timeout)
+      #logging.getLogger().setLevel(logging.ERROR)
       return len(data)
 
   def bulkRead(self, endpoint: int, length: int, timeout: int = TIMEOUT) -> bytes:
