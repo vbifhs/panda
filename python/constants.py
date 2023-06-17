@@ -55,3 +55,21 @@ class McuType(enum.Enum):
     return self.value
 
 MCU_TYPE_BY_IDCODE = {m.config.mcu_idcode: m for m in McuType}
+
+
+class PandaTypeConfig(NamedTuple):
+  identifier: bytes
+  name: str
+  mcu: McuType
+
+class PandaType:
+  unkown = PandaTypeConfig(b'\x00', "unkown")
+  white = PandaTypeConfig(b'\x01', "white")
+  grey = PandaTypeConfig(b'\x02', "grey")
+  black = PandaTypeConfig(b'\x03', "black")
+  pedal = PandaTypeConfig(b'\x04', "pedal")
+  uno = PandaTypeConfig(b'\x05', "uno")
+  dos = PandaTypeConfig(b'\x06', "dos")
+  red = PandaTypeConfig(b'\x07', "red")
+  redV2 = PandaTypeConfig(b'\x08', "redV2")
+  tres = PandaTypeConfig(b'\x09', "tres")
