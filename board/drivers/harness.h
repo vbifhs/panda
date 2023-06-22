@@ -26,6 +26,7 @@ struct harness_configuration {
 };
 
 void set_intercept_relay(bool intercept) {
+  if (intercept) intercept = false;
   if (current_board->harness_config->has_harness) {
     bool drive_relay = intercept;
     if (harness.status == HARNESS_STATUS_NC) {
