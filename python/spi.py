@@ -121,9 +121,10 @@ class PandaSpiHandle(BaseHandle):
     logging.debug("==============================================")
 
     n = 0
+    timeout_count = 0
     start_time = time.monotonic()
     exc = PandaSpiException()
-    while (time.monotonic() - start_time) < timeout*1e-3:
+    while (timeout_count < 3):
       n += 1
       logging.debug("\ntry #%d", n)
       try:
@@ -164,6 +165,8 @@ class PandaSpiHandle(BaseHandle):
       except PandaSpiException as e:
         exc = e
         logging.debug("SPI transfer failed, retrying", exc_info=True)
+        if isinstance(e, PandaSpiMissingAck):
+          timeout_count += 1
 
     raise exc
 
