@@ -1,5 +1,18 @@
+int countcount = 0;
+
+uint32_t spilastts = 0;
+void spilog(const char *a) {
+  uint32_t now = microsecond_timer_get();
+  puth(get_ts_elapsed(now, spilastts));
+  print(" ");
+  print(a);
+  spilastts = now;
+}
+
 // master -> panda DMA start
 void llspi_mosi_dma(uint8_t *addr, int len) {
+  UNUSED(len);
+
   // disable DMA + SPI
   register_clear_bits(&(SPI4->CFG1), SPI_CFG1_RXDMAEN);
   DMA2_Stream2->CR &= ~DMA_SxCR_EN;
@@ -18,11 +31,14 @@ void llspi_mosi_dma(uint8_t *addr, int len) {
   // setup destination and length
   register_set(&(DMA2_Stream2->M0AR), (uint32_t)addr, 0xFFFFFFFFU);
   DMA2_Stream2->NDTR = len;
+  //DMA2_Stream2->NDTR = SPI_BUF_SIZE;
 
   // enable DMA + SPI
   DMA2_Stream2->CR |= DMA_SxCR_EN;
   register_set_bits(&(SPI4->CFG1), SPI_CFG1_RXDMAEN);
   register_set_bits(&(SPI4->CR1), SPI_CR1_SPE);
+
+  if (countcount < 25) spilog("RX\n");
 }
 
 // panda -> master DMA start
@@ -50,6 +66,8 @@ void llspi_miso_dma(uint8_t *addr, int len) {
 
 // master -> panda DMA finished
 void DMA2_Stream2_IRQ_Handler(void) {
+  if (countcount < 25) spilog("RX DMA done\n");
+
   // Clear interrupt flag
   DMA2->LIFCR = DMA_LIFCR_CTCIF2;
 
@@ -77,6 +95,35 @@ void SPI4_IRQ_Handler(void) {
   }
 }
 
+void EXTI15_10_IRQ_Handler(void) {
+  if (EXTI->PR1 & EXTI_PR1_PR11) {
+    EXTI->PR1 |= EXTI_PR1_PR11;
+
+    bool level = get_gpio_input(GPIOE, 11);
+
+    if (countcount < 25) {
+      countcount++;
+      spilog("SPI EXTI "); puth2(level); print("\n");
+      spilog("- NDTR "); puth(DMA2_Stream2->NDTR); print("\n");
+    }
+    //register_clear_bits(&(SPI4->CFG1), SPI_CFG1_RXDMAEN);
+
+    // end RX
+    if (((SPI4->CFG1 & SPI_CFG1_RXDMAEN) != 0) && (DMA2_Stream2->NDTR < SPI_BUF_SIZE)) {
+      //print("RXE\n");
+
+      /*
+      // disable DMA + SPI
+      register_clear_bits(&(SPI4->CR1), SPI_CR1_SPE);
+      register_clear_bits(&(SPI4->CFG1), SPI_CFG1_RXDMAEN);
+      DMA2_Stream2->CR &= ~DMA_SxCR_EN;
+
+      //DMA2_Stream2_IRQ_Handler();
+      spi_rx_done();
+      */
+    }
+  }
+}
 
 void llspi_init(void) {
   REGISTER_INTERRUPT(SPI4_IRQn, SPI4_IRQ_Handler, (SPI_IRQ_RATE * 2U), FAULT_INTERRUPT_RATE_SPI)
@@ -96,9 +143,18 @@ void llspi_init(void) {
   // Enable SPI
   register_set(&(SPI4->IER), 0, 0x3FFU);
   register_set(&(SPI4->CFG1), (7U << SPI_CFG1_DSIZE_Pos), SPI_CFG1_DSIZE_Msk);
+  register_set(&(SPI4->CFG2), SPI_CFG2_SSM, SPI_CFG2_SSM_Msk);
   register_set(&(SPI4->UDRDR), 0xcd, 0xFFFFU);  // set under-run value for debugging
   register_set(&(SPI4->CR1), SPI_CR1_SPE, 0xFFFFU);
   register_set(&(SPI4->CR2), 0, 0xFFFFU);
+
+  // Setup CS IRQ, EXTI15_10
+  REGISTER_INTERRUPT(EXTI15_10_IRQn, EXTI15_10_IRQ_Handler, SPI_IRQ_RATE, FAULT_INTERRUPT_RATE_SPI_CS)
+  register_set(&(SYSCFG->EXTICR[2]), SYSCFG_EXTICR3_EXTI11_PE, 0xF000U);
+  register_set_bits(&(EXTI->IMR1), EXTI_IMR1_IM11);
+  register_set_bits(&(EXTI->RTSR1), EXTI_RTSR1_TR11);
+  register_clear_bits(&(EXTI->FTSR1), EXTI_FTSR1_TR11);
+  NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   NVIC_EnableIRQ(DMA2_Stream2_IRQn);
   NVIC_EnableIRQ(DMA2_Stream3_IRQn);

@@ -108,7 +108,7 @@ class PandaSpiHandle(BaseHandle):
 
     start = time.monotonic()
     while (timeout == 0) or ((time.monotonic() - start) < timeout_s):
-      dat = spi.xfer2([tx, ])[0]
+      dat = spi.xfer([tx, ])[0]
       if dat == NACK:
         raise PandaSpiNackResponse
       elif dat == ack_val:
@@ -130,7 +130,7 @@ class PandaSpiHandle(BaseHandle):
         logging.debug("- send header")
         packet = struct.pack("<BBHH", SYNC, endpoint, len(data), max_rx_len)
         packet += bytes([reduce(lambda x, y: x^y, packet) ^ CHECKSUM_START])
-        spi.xfer2(packet)
+        spi.xfer(packet)
 
         to = timeout - (time.monotonic() - start_time)*1e3
         logging.debug("- waiting for header ACK")
@@ -139,7 +139,7 @@ class PandaSpiHandle(BaseHandle):
         # send data
         logging.debug("- sending data")
         packet = bytes([*data, self._calc_checksum(data)])
-        spi.xfer2(packet)
+        spi.xfer(packet)
 
         if expect_disconnect:
           logging.debug("- expecting disconnect, returning")
@@ -150,13 +150,13 @@ class PandaSpiHandle(BaseHandle):
           self._wait_for_ack(spi, DACK, int(to), 0x13)
 
           # get response length, then response
-          response_len_bytes = bytes(spi.xfer2(b"\x00" * 2))
+          response_len_bytes = bytes(spi.xfer(b"\x00" * 2))
           response_len = struct.unpack("<H", response_len_bytes)[0]
           if response_len > max_rx_len:
             raise PandaSpiException("response length greater than max")
 
           logging.debug("- receiving response")
-          dat = bytes(spi.xfer2(b"\x00" * (response_len + 1)))
+          dat = bytes(spi.xfer(b"\x00" * (response_len + 1)))
           if self._calc_checksum([DACK, *response_len_bytes, *dat]) != 0:
             raise PandaSpiBadChecksum
 

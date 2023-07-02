@@ -4,11 +4,13 @@ void exti_irq_init(void) {
   if (harness.status == HARNESS_STATUS_FLIPPED) {
     // CAN2_RX IRQ on falling edge (EXTI10)
     current_board->enable_can_transceiver(3U, false);
+    /*
     SYSCFG->EXTICR[2] &= ~(SYSCFG_EXTICR3_EXTI10_Msk);
     SYSCFG->EXTICR[2] |=  (SYSCFG_EXTICR3_EXTI10_PG);
     EXTI->IMR1  |=  EXTI_IMR1_IM10;
     EXTI->RTSR1 &=  ~EXTI_RTSR1_TR10; // rising edge
     EXTI->FTSR1 |=  EXTI_FTSR1_TR10; // falling edge
+    */
 
     // IRQ on falling edge for PA1 (SBU2, EXTI1)
     SYSCFG->EXTICR[0] &= ~(SYSCFG_EXTICR1_EXTI1_Msk);
@@ -18,8 +20,8 @@ void exti_irq_init(void) {
     EXTI->FTSR1 |=  EXTI_FTSR1_TR1; // falling edge
     REGISTER_INTERRUPT(EXTI1_IRQn, EXTI_IRQ_Handler, 100U, FAULT_INTERRUPT_RATE_EXTI)
     NVIC_EnableIRQ(EXTI1_IRQn);
-    REGISTER_INTERRUPT(EXTI15_10_IRQn, EXTI_IRQ_Handler, 100U, FAULT_INTERRUPT_RATE_EXTI)
-    NVIC_EnableIRQ(EXTI15_10_IRQn);
+    //REGISTER_INTERRUPT(EXTI15_10_IRQn, EXTI_IRQ_Handler, 100U, FAULT_INTERRUPT_RATE_EXTI)
+    //NVIC_EnableIRQ(EXTI15_10_IRQn);
   } else {
     // CAN0_RX IRQ on falling edge (EXTI8)
     current_board->enable_can_transceiver(1U, false);

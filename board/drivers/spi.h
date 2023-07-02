@@ -78,6 +78,7 @@ void spi_rx_done(void) {
   spi_data_len_mosi = (spi_buf_rx[3] << 8) | spi_buf_rx[2];
   spi_data_len_miso = (spi_buf_rx[5] << 8) | spi_buf_rx[4];
 
+
   if (spi_state == SPI_STATE_HEADER) {
     checksum_valid = check_checksum(spi_buf_rx, SPI_HEADER_SIZE);
     if ((spi_buf_rx[0] == SPI_SYNC_BYTE) && checksum_valid) {

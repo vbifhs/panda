@@ -6,7 +6,9 @@ void gpio_usb_init(void) {
 }
 
 void gpio_spi_init(void) {
-  set_gpio_alternate(GPIOE, 11, GPIO_AF5_SPI4);
+  // chip select input
+  set_gpio_mode(GPIOE, 11, MODE_INPUT);
+  //set_gpio_alternate(GPIOE, 11, GPIO_AF5_SPI4);
   set_gpio_alternate(GPIOE, 12, GPIO_AF5_SPI4);
   set_gpio_alternate(GPIOE, 13, GPIO_AF5_SPI4);
   set_gpio_alternate(GPIOE, 14, GPIO_AF5_SPI4);
