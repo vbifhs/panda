@@ -245,7 +245,7 @@ static int toyota_fwd_hook(int bus_num, int addr) {
 
   if (bus_num == 2) {
     // block stock lkas messages and stock acc messages (if OP is doing ACC)
-    int is_cam_msg = ((addr == 0x2fd) || (addr == 0x367) || (addr == 0x36d) || (addr == 0x371) || (addr == 0x414) || (addr == 0x4d3) || (addr == 0x6ef))
+    int is_cam_msg = ((addr == 0x2fd) || (addr == 0x367) || (addr == 0x36d) || (addr == 0x371) || (addr == 0x414) || (addr == 0x4d3) || (addr == 0x6ef));
     // in TSS2, 0x191 is LTA which we need to block to avoid controls collision
     int is_lkas_msg = ((addr == 0x2E4) || (addr == 0x412) || (addr == 0x191));
     // in TSS2 the camera does ACC as well, so filter 0x343
