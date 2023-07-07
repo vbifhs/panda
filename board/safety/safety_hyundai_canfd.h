@@ -19,13 +19,13 @@ const SteeringLimits HYUNDAI_CANFD_STEERING_LIMITS = {
 };
 
 const CanMsg HYUNDAI_CANFD_HDA2_TX_MSGS[] = {
-  {0x110, 0, 16},  // LKAS
+  {0x110, 0, 32},  // LKAS
   {0x1CF, 1, 8},  // CRUISE_BUTTON
   {0x2A4, 0, 24}, // CAM_0x2A4
 };
 
 const CanMsg HYUNDAI_CANFD_HDA2_LONG_TX_MSGS[] = {
-  {0x110, 0, 16},  // LKAS
+  {0x110, 0, 32},  // LKAS
   {0x1CF, 1, 8},  // CRUISE_BUTTON
   {0x2A4, 0, 24}, // CAM_0x2A4
   {0x51, 0, 32},  // ADRV_0x51
