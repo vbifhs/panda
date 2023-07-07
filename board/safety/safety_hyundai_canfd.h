@@ -19,13 +19,13 @@ const SteeringLimits HYUNDAI_CANFD_STEERING_LIMITS = {
 };
 
 const CanMsg HYUNDAI_CANFD_HDA2_TX_MSGS[] = {
-  {0x50, 0, 16},  // LKAS
+  {0x110, 0, 16},  // LKAS
   {0x1CF, 1, 8},  // CRUISE_BUTTON
   {0x2A4, 0, 24}, // CAM_0x2A4
 };
 
 const CanMsg HYUNDAI_CANFD_HDA2_LONG_TX_MSGS[] = {
-  {0x50, 0, 16},  // LKAS
+  {0x110, 0, 16},  // LKAS
   {0x1CF, 1, 8},  // CRUISE_BUTTON
   {0x2A4, 0, 24}, // CAM_0x2A4
   {0x51, 0, 32},  // ADRV_0x51
@@ -231,7 +231,7 @@ static int hyundai_canfd_rx_hook(CANPacket_t *to_push) {
     }
   }
 
-  const int steer_addr = hyundai_canfd_hda2 ? 0x50 : 0x12a;
+  const int steer_addr = hyundai_canfd_hda2 ? 0x110 : 0x12a;
   bool stock_ecu_detected = (addr == steer_addr) && (bus == 0);
   if (hyundai_longitudinal) {
     // on HDA2, ensure ADRV ECU is still knocked out
@@ -258,7 +258,7 @@ static int hyundai_canfd_tx_hook(CANPacket_t *to_send) {
   }
 
   // steering
-  const int steer_addr = (hyundai_canfd_hda2 && !hyundai_longitudinal) ? 0x50 : 0x12a;
+  const int steer_addr = (hyundai_canfd_hda2 && !hyundai_longitudinal) ? 0x110 : 0x12a;
   if (addr == steer_addr) {
     int desired_torque = (((GET_BYTE(to_send, 6) & 0xFU) << 7U) | (GET_BYTE(to_send, 5) >> 1U)) - 1024U;
     bool steer_req = GET_BIT(to_send, 52U) != 0U;
@@ -320,7 +320,7 @@ static int hyundai_canfd_fwd_hook(int bus_num, int addr) {
   }
   if (bus_num == 2) {
     // LKAS for HDA2, LFA for HDA1
-    int is_lkas_msg = (((addr == 0x50) || (addr == 0x2a4)) && hyundai_canfd_hda2);
+    int is_lkas_msg = (((addr == 0x110) || (addr == 0x2a4)) && hyundai_canfd_hda2);
     int is_lfa_msg = ((addr == 0x12a) && !hyundai_canfd_hda2);
 
     // HUD icons
