@@ -107,14 +107,17 @@ class PandaSpiHandle(BaseHandle):
   def _wait_for_ack(self, spi, ack_val: int, timeout: int, tx: int) -> None:
     timeout_s = max(MIN_ACK_TIMEOUT_MS, timeout) * 1e-3
 
+    vals = []
     start = time.monotonic()
     while (timeout == 0) or ((time.monotonic() - start) < timeout_s):
       dat = spi.xfer2([tx, ])[0]
+      vals.append(hex(dat))
       if dat == NACK:
         raise PandaSpiNackResponse
       elif dat == ack_val:
         return
 
+    print("ack vals", vals)
     raise PandaSpiMissingAck
 
   def _transfer(self, spi, endpoint: int, data, timeout: int, max_rx_len: int = 1000, expect_disconnect: bool = False) -> bytes:

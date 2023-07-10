@@ -1,6 +1,10 @@
+int countcount = 0;
+
 // master -> panda DMA start
 void llspi_mosi_dma(uint8_t *addr, int len) {
   // disable DMA + SPI
+  DMA2_Stream3->CR &= ~DMA_SxCR_EN;
+  register_clear_bits(&(SPI4->CFG1), SPI_CFG1_TXDMAEN);
   register_clear_bits(&(SPI4->CFG1), SPI_CFG1_RXDMAEN);
   DMA2_Stream2->CR &= ~DMA_SxCR_EN;
   register_clear_bits(&(SPI4->CR1), SPI_CR1_SPE);
@@ -18,6 +22,8 @@ void llspi_mosi_dma(uint8_t *addr, int len) {
   // setup destination and length
   register_set(&(DMA2_Stream2->M0AR), (uint32_t)addr, 0xFFFFFFFFU);
   DMA2_Stream2->NDTR = len;
+  SPI4->CR2 = len;
+  SPI4->CFG1 &= ~SPI_CFG1_FTHLV_Msk;
 
   // enable DMA + SPI
   DMA2_Stream2->CR |= DMA_SxCR_EN;
@@ -30,11 +36,17 @@ void llspi_miso_dma(uint8_t *addr, int len) {
   // disable DMA + SPI
   DMA2_Stream3->CR &= ~DMA_SxCR_EN;
   register_clear_bits(&(SPI4->CFG1), SPI_CFG1_TXDMAEN);
+  register_clear_bits(&(SPI4->CFG1), SPI_CFG1_RXDMAEN);
+  DMA2_Stream2->CR &= ~DMA_SxCR_EN;
   register_clear_bits(&(SPI4->CR1), SPI_CR1_SPE);
 
   // setup source and length
   register_set(&(DMA2_Stream3->M0AR), (uint32_t)addr, 0xFFFFFFFFU);
   DMA2_Stream3->NDTR = len;
+  //SPI4->CR2 = (len - 1) & SPI_CR2_TSIZE_Msk;
+  //SPI4->CR2 = 0;
+  SPI4->CR2 = len;
+  SPI4->CFG1 &= ~SPI_CFG1_FTHLV_Msk;
 
   // clear under-run while we were reading
   SPI4->IFCR |= (0x1FFU << 3U);
@@ -52,6 +64,13 @@ void llspi_miso_dma(uint8_t *addr, int len) {
 void DMA2_Stream2_IRQ_Handler(void) {
   // Clear interrupt flag
   DMA2->LIFCR = DMA_LIFCR_CTCIF2;
+
+  /*
+  if (SPI4->SR & SPI_SR_CRCE) {
+    countcount += 1;
+    print("CRC error\n");
+  }
+  */
 
   spi_rx_done();
 }
@@ -95,10 +114,12 @@ void llspi_init(void) {
 
   // Enable SPI
   register_set(&(SPI4->IER), 0, 0x3FFU);
+  //register_set(&(SPI4->CFG1), (7U << SPI_CFG1_DSIZE_Pos) | SPI_CFG1_CRCEN | (3U << SPI_CFG1_CRCSIZE_Pos), SPI_CFG1_DSIZE_Msk | SPI_CFG1_CRCEN_Msk | SPI_CFG1_CRCSIZE_Msk);
   register_set(&(SPI4->CFG1), (7U << SPI_CFG1_DSIZE_Pos), SPI_CFG1_DSIZE_Msk);
+  //register_set(&(SPI4->CRCPOLY), , SPI_CRCPOLY_CRCPOLY_Msk);
   register_set(&(SPI4->UDRDR), 0xcd, 0xFFFFU);  // set under-run value for debugging
-  register_set(&(SPI4->CR1), SPI_CR1_SPE, 0xFFFFU);
-  register_set(&(SPI4->CR2), 0, 0xFFFFU);
+  //register_set(&(SPI4->CR1), SPI_CR1_SPE, 0xFFFFU);
+  //register_set(&(SPI4->CR2), 0, 0xFFFFU);
 
   NVIC_EnableIRQ(DMA2_Stream2_IRQn);
   NVIC_EnableIRQ(DMA2_Stream3_IRQn);
