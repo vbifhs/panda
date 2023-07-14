@@ -104,16 +104,16 @@ class PandaSpiHandle(BaseHandle):
       cksum ^= b
     return cksum
 
-  def _wait_for_ack(self, spi, ack_val: int, timeout: int, tx: int) -> None:
+  def _wait_for_ack(self, spi, ack_val: int, timeout: int, tx: int, length: int = 1) -> bytes:
     timeout_s = max(MIN_ACK_TIMEOUT_MS, timeout) * 1e-3
 
     start = time.monotonic()
     while (timeout == 0) or ((time.monotonic() - start) < timeout_s):
-      dat = spi.xfer2([tx, ])[0]
-      if dat == NACK:
+      dat = spi.xfer2([tx, ] * length)
+      if dat[0] == NACK:
         raise PandaSpiNackResponse
-      elif dat == ack_val:
-        return
+      elif dat[0] == ack_val:
+        return bytes(dat)
 
     raise PandaSpiMissingAck
 
@@ -148,16 +148,23 @@ class PandaSpiHandle(BaseHandle):
         else:
           to = timeout - (time.monotonic() - start_time)*1e3
           logging.debug("- waiting for data ACK")
-          self._wait_for_ack(spi, DACK, int(to), 0x13)
 
-          # get response length, then response
-          response_len_bytes = bytes(spi.xfer2(b"\x00" * 2))
+          # pre-read enough for a controlRead plus checksum
+          response_preread = 0x41
+          a = self._wait_for_ack(spi, DACK, int(to), 0x13, length=3+response_preread)
+
+          # get response
+          response_len_bytes = a[1:3]
           response_len = struct.unpack("<H", response_len_bytes)[0]
           if response_len > max_rx_len:
             raise PandaSpiException("response length greater than max")
 
+          remaining = (response_len + 1) - response_preread
+          if remaining > 0:
+            a += bytes(spi.xfer2(b"\x00" * remaining))
+
           logging.debug("- receiving response")
-          dat = bytes(spi.xfer2(b"\x00" * (response_len + 1)))
+          dat = a[3:3+response_len+1]
           if self._calc_checksum([DACK, *response_len_bytes, *dat]) != 0:
             raise PandaSpiBadChecksum
 
