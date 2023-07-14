@@ -149,8 +149,7 @@ class PandaSpiHandle(BaseHandle):
           to = timeout - (time.monotonic() - start_time)*1e3
           logging.debug("- waiting for data ACK")
 
-          # pre-read enough for a max size controlRead plus checksum
-          response_preread = 0x41
+          response_preread = max_rx_len + 1
           dat = self._wait_for_ack(spi, DACK, int(to), 0x13, length=3+response_preread)
 
           # get response
@@ -158,15 +157,11 @@ class PandaSpiHandle(BaseHandle):
           if response_len > max_rx_len:
             raise PandaSpiException("response length greater than max")
 
-          remaining = (response_len + 1) - response_preread
-          if remaining > 0:
-            dat += bytes(spi.xfer2(b"\x00" * remaining))
-
           logging.debug("- receiving response")
-          if self._calc_checksum(dat) != 0:
+          if self._calc_checksum(dat[:3 + response_len + 1]) != 0:
             raise PandaSpiBadChecksum
 
-          return dat[3:-1]
+          return dat[3:3+response_len]
       except PandaSpiException as e:
         exc = e
         logging.debug("SPI transfer failed, retrying", exc_info=True)
