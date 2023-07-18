@@ -422,7 +422,6 @@ class Panda:
       with usb1.USBContext() as context:
         logging.warning(context.getDeviceList())
         logging.warning(context.getDeviceList(skip_on_error=True))
-        logging.warning(context.getDeviceList(skip_on_error=True))
         for device in context.getDeviceList(skip_on_error=True):
           if device.getVendorID() == 0xbbaa and device.getProductID() in (0xddcc, 0xddee):
             try:
