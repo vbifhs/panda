@@ -140,6 +140,7 @@ class PandaSpiHandle(BaseHandle):
       cksum ^= b
     return cksum
 
+
   def _wait_for_ack(self, spi, ack_val: int, timeout: int, tx: int, length: int = 1) -> bytes:
     timeout_s = max(MIN_ACK_TIMEOUT_MS, timeout) * 1e-3
 
@@ -165,8 +166,7 @@ class PandaSpiHandle(BaseHandle):
     self._wait_for_ack(spi, HACK, MIN_ACK_TIMEOUT_MS, 0x11)
 
     logging.debug("- sending data")
-    packet = bytes([*data, self._calc_checksum(data)])
-    spi.xfer2(packet)
+    spi.xfer2(bytes([*data, self._calc_checksum(data)]))
 
     if expect_disconnect:
       logging.debug("- expecting disconnect, returning")

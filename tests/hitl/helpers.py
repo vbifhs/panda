@@ -23,6 +23,8 @@ def time_many_sends(p, bus, p_recv=None, msg_count=100, two_pandas=False):
 
   start_time = time.monotonic()
   p.can_send_many(to_send)
+  t2 = time.monotonic()
+  print("send time", t2-start_time)
   r = []
   r_echo = []
   r_len_expected = msg_count if two_pandas else msg_count * 2
@@ -31,6 +33,7 @@ def time_many_sends(p, bus, p_recv=None, msg_count=100, two_pandas=False):
   while len(r) < r_len_expected and (time.monotonic() - start_time) < 5:
     r.extend(p_recv.can_recv())
   end_time = time.monotonic()
+  print("recv time", end_time - t2)
   if two_pandas:
     while len(r_echo) < r_echo_len_exected and (time.monotonic() - start_time) < 10:
       r_echo.extend(p.can_recv())
@@ -46,6 +49,8 @@ def time_many_sends(p, bus, p_recv=None, msg_count=100, two_pandas=False):
   assert len(sent_echo) == msg_count
 
   end_time = (end_time - start_time) * 1000.0
+
+  # bit count from https://en.wikipedia.org/wiki/CAN_bus
   comp_kbps = (1 + 11 + 1 + 1 + 1 + 4 + 8 * 8 + 15 + 1 + 1 + 1 + 7) * msg_count / end_time
 
   return comp_kbps
