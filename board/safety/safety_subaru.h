@@ -1,28 +1,6 @@
-#define SUBARU_STEERING_LIMITS_GENERATOR(steer_max, rate_up, rate_down)          \
-  {                                                                              \
-    .max_steer = (steer_max),                                                    \
-    .max_rt_delta = 940,                                                         \
-    .max_rt_interval = 250000,                                                   \
-    .max_rate_up = (rate_up),                                                    \
-    .max_rate_down = (rate_down),                                                \
-    .driver_torque_factor = 50,                                                  \
-    .driver_torque_allowance = 60,                                               \
-    .type = TorqueDriverLimited,                                                 \
-  }                                                                              \
+const SteeringLimits SUBARU_STEERING_LIMITS      = SUBARU_STEERING_LIMITS_GENERATOR(2047, 50, 70, 50, 60);
+const SteeringLimits SUBARU_GEN2_STEERING_LIMITS = SUBARU_STEERING_LIMITS_GENERATOR(1000, 40, 40, 50, 60);
 
-const SteeringLimits SUBARU_STEERING_LIMITS      = SUBARU_STEERING_LIMITS_GENERATOR(2047, 50, 70);
-const SteeringLimits SUBARU_GEN2_STEERING_LIMITS = SUBARU_STEERING_LIMITS_GENERATOR(1000, 40, 40);
-
-
-const LongitudinalLimits SUBARU_LONG_LIMITS = {
-  .min_gas = 808,       // appears to be engine braking
-  .max_gas = 3400,      // approx  2 m/s^2 when maxing cruise_rpm and cruise_throttle
-  .inactive_gas = 1818, // this is zero acceleration
-  .max_brake = 600,     // approx -3.5 m/s^2
-
-  .min_transmission_rpm = 0,
-  .max_transmission_rpm = 2400,
-};
 
 #define MSG_SUBARU_Brake_Status          0x13c
 #define MSG_SUBARU_CruiseControl         0x240
@@ -39,9 +17,6 @@ const LongitudinalLimits SUBARU_LONG_LIMITS = {
 #define MSG_SUBARU_ES_LKAS_State         0x322
 #define MSG_SUBARU_ES_Infotainment       0x323
 
-#define SUBARU_MAIN_BUS 0
-#define SUBARU_ALT_BUS  1
-#define SUBARU_CAM_BUS  2
 
 #define SUBARU_COMMON_TX_MSGS(alt_bus, lkas_msg)    \
   {MSG_SUBARU_ES_LKAS,         SUBARU_MAIN_BUS, 8}, \
