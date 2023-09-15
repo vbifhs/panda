@@ -22,7 +22,7 @@ int get_health_pkt(void *dat) {
   health->safety_rx_invalid_pkt = safety_rx_invalid;
   health->tx_buffer_overflow_pkt = tx_buffer_overflow;
   health->rx_buffer_overflow_pkt = rx_buffer_overflow;
-  health->gmlan_send_errs_pkt = gmlan_send_errs;
+  // health->gmlan_send_errs_pkt = gmlan_send_errs; // FIXME:
   health->car_harness_status_pkt = harness.status;
   health->safety_mode_pkt = (uint8_t)(current_safety_mode);
   health->safety_param_pkt = current_safety_param;
@@ -43,6 +43,9 @@ int get_health_pkt(void *dat) {
 
   health->sbu1_voltage_mV = harness.sbu1_voltage_mV;
   health->sbu2_voltage_mV = harness.sbu2_voltage_mV;
+
+  health->highest_irq_num = highest_irq_num;
+  health->highest_irq_rate = highest_irq_rate;
 
   return sizeof(*health);
 }

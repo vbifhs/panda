@@ -1,3 +1,9 @@
+#define NVIC_PRIORITYGROUP_0         ((uint32_t)0x00000007) /*!< 0 bits for pre-emption priority 4 bits for subpriority */
+#define NVIC_PRIORITYGROUP_1         ((uint32_t)0x00000006) /*!< 1 bits for pre-emption priority 3 bits for subpriority */
+#define NVIC_PRIORITYGROUP_2         ((uint32_t)0x00000005) /*!< 2 bits for pre-emption priority 2 bits for subpriority */
+#define NVIC_PRIORITYGROUP_3         ((uint32_t)0x00000004) /*!< 3 bits for pre-emption priority 1 bits for subpriority */
+#define NVIC_PRIORITYGROUP_4         ((uint32_t)0x00000003) /*!< 4 bits for pre-emption priority 0 bits for subpriority */
+
 typedef struct interrupt {
   IRQn_Type irq_type;
   void (*handler)(void);
@@ -33,6 +39,8 @@ uint32_t last_time = 0U;
 uint32_t idle_time = 0U;
 uint32_t busy_time = 0U;
 float interrupt_load = 0.0f;
+uint8_t highest_irq_num = 0U;
+uint16_t highest_irq_rate = 0U;
 
 void handle_interrupt(IRQn_Type irq_type){
   ENTER_CRITICAL();
@@ -74,6 +82,12 @@ void interrupt_timer_handler(void) {
       // Reset interrupt counters
       interrupts[i].call_rate = interrupts[i].call_counter;
       interrupts[i].call_counter = 0U;
+
+      // FIXME: Exceptions aren't logged or checked by our code at all.
+      if (interrupts[i].call_rate > highest_irq_rate) {
+        highest_irq_rate = interrupts[i].call_rate;
+        highest_irq_num = i;
+      }
     }
 
     // Calculate interrupt load
@@ -87,12 +101,37 @@ void interrupt_timer_handler(void) {
   INTERRUPT_TIMER->SR = 0;
 }
 
-void init_interrupts(bool check_rate_limit){
+void init_interrupts(bool check_rate_limit) {
+  NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+
   check_interrupt_rate = check_rate_limit;
 
   for(uint16_t i=0U; i<NUM_INTERRUPTS; i++){
     interrupts[i].handler = unused_interrupt_handler;
+    NVIC_SetPriority(i, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 2, 0));
   }
+
+  // Communication interrupts are at the second highest priority
+  #ifdef STM32H7
+  NVIC_SetPriority(SPI4_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 1, 0));
+  NVIC_SetPriority(OTG_HS_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 1, 0));
+  #else
+  NVIC_SetPriority(OTG_FS_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 1, 0));
+  #endif
+  NVIC_SetPriority(DMA2_Stream3_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 1, 0));
+  NVIC_SetPriority(DMA2_Stream2_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 1, 0));
+
+  // Exceptions are at the highest priority
+  NVIC_SetPriority(MemoryManagement_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 0, 0));
+  NVIC_SetPriority(BusFault_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 0, 0));
+  NVIC_SetPriority(UsageFault_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 0, 0));
+  NVIC_SetPriority(SVCall_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 0, 0));
+  NVIC_SetPriority(DebugMonitor_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 0, 0));
+  NVIC_SetPriority(PendSV_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 0, 0));
+  NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 0, 0));
+
+  // Highest priority for interrupt timer FIXME: switch to SysTick
+  NVIC_SetPriority(INTERRUPT_TIMER_IRQ, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 0, 0));
 
   // Init interrupt timer for a 1s interval
   interrupt_timer_init();

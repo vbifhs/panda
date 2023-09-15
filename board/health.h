@@ -1,6 +1,6 @@
 // When changing these structs, python/__init__.py needs to be kept up to date!
 
-#define HEALTH_PACKET_VERSION 14
+#define HEALTH_PACKET_VERSION 15
 struct __attribute__((packed)) health_t {
   uint32_t uptime_pkt;
   uint32_t voltage_pkt;
@@ -9,7 +9,7 @@ struct __attribute__((packed)) health_t {
   uint32_t safety_rx_invalid_pkt;
   uint32_t tx_buffer_overflow_pkt;
   uint32_t rx_buffer_overflow_pkt;
-  uint32_t gmlan_send_errs_pkt;
+  // uint32_t gmlan_send_errs_pkt; // FIXME: we don't have space in the health packet
   uint32_t faults_pkt;
   uint8_t ignition_line_pkt;
   uint8_t ignition_can_pkt;
@@ -29,6 +29,8 @@ struct __attribute__((packed)) health_t {
   uint8_t fan_stall_count;
   uint16_t sbu1_voltage_mV;
   uint16_t sbu2_voltage_mV;
+  uint8_t highest_irq_num;
+  uint16_t highest_irq_rate;
 };
 
 #define CAN_HEALTH_PACKET_VERSION 5
