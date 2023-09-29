@@ -17,8 +17,8 @@ int get_health_pkt(void *dat) {
   health->ignition_can_pkt = (uint8_t)(ignition_can);
 
   health->controls_allowed_pkt = controls_allowed;
-  health->gas_interceptor_detected_pkt = gas_interceptor_detected;
-  health->safety_tx_blocked_pkt = safety_tx_blocked;
+  // health->gas_interceptor_detected_pkt = gas_interceptor_detected; // FIXME:
+  // health->safety_tx_blocked_pkt = safety_tx_blocked; // FIXME:
   health->safety_rx_invalid_pkt = safety_rx_invalid;
   health->tx_buffer_overflow_pkt = tx_buffer_overflow;
   health->rx_buffer_overflow_pkt = rx_buffer_overflow;
@@ -46,6 +46,9 @@ int get_health_pkt(void *dat) {
 
   health->highest_irq_num = highest_irq_num;
   health->highest_irq_rate = highest_irq_rate;
+
+  health->longest_irq_num = longest_irq_num;
+  health->longest_irq_time = longest_irq_time;
 
   return sizeof(*health);
 }

@@ -185,9 +185,9 @@ class Panda:
   HW_TYPE_TRES = b'\x09'
 
   CAN_PACKET_VERSION = 4
-  HEALTH_PACKET_VERSION = 15
+  HEALTH_PACKET_VERSION = 16
   CAN_HEALTH_PACKET_VERSION = 5
-  HEALTH_STRUCT = struct.Struct("<IIIIIIIIBBBBBBHBBBHfBBHBHHBH")
+  HEALTH_STRUCT = struct.Struct("<IIIIIIIBBBBBHBBBHfBBHBHHBHBI")
   CAN_HEALTH_STRUCT = struct.Struct("<BIBBBBBBBBIIIIIIIHHBBBIIII")
 
   F2_DEVICES = [HW_TYPE_PEDAL, ]
@@ -593,31 +593,31 @@ class Panda:
       "uptime": a[0],
       "voltage": a[1],
       "current": a[2],
-      "safety_tx_blocked": a[3],
-      "safety_rx_invalid": a[4],
-      "tx_buffer_overflow": a[5],
-      "rx_buffer_overflow": a[6],
-      "faults": a[7],
-      "ignition_line": a[8],
-      "ignition_can": a[9],
-      "controls_allowed": a[10],
-      "gas_interceptor_detected": a[11],
-      "car_harness_status": a[12],
-      "safety_mode": a[13],
-      "safety_param": a[14],
-      "fault_status": a[15],
-      "power_save_enabled": a[16],
-      "heartbeat_lost": a[17],
-      "alternative_experience": a[18],
-      "interrupt_load": a[19],
-      "fan_power": a[20],
-      "safety_rx_checks_invalid": a[21],
-      "spi_checksum_error_count": a[22],
-      "fan_stall_count": a[23],
-      "sbu1_voltage_mV": a[24],
-      "sbu2_voltage_mV": a[25],
-      "highest_irq_num": a[26],
-      "highest_irq_rate": a[27],
+      "safety_rx_invalid": a[3],
+      "tx_buffer_overflow": a[4],
+      "rx_buffer_overflow": a[5],
+      "faults": a[6],
+      "ignition_line": a[7],
+      "ignition_can": a[8],
+      "controls_allowed": a[9],
+      "car_harness_status": a[10],
+      "safety_mode": a[11],
+      "safety_param": a[12],
+      "fault_status": a[13],
+      "power_save_enabled": a[14],
+      "heartbeat_lost": a[15],
+      "alternative_experience": a[16],
+      "interrupt_load": a[17],
+      "fan_power": a[18],
+      "safety_rx_checks_invalid": a[19],
+      "spi_checksum_error_count": a[20],
+      "fan_stall_count": a[21],
+      "sbu1_voltage_mV": a[22],
+      "sbu2_voltage_mV": a[23],
+      "highest_irq_num": a[24],
+      "highest_irq_rate": a[25],
+      "longest_irq_num": a[26],
+      "longest_irq_time": a[27],
     }
 
   @ensure_can_health_packet_version

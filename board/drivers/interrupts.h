@@ -11,6 +11,7 @@ typedef struct interrupt {
   uint32_t call_rate;
   uint32_t max_call_rate;   // Call rate is defined as the amount of calls each second
   uint32_t call_rate_fault;
+  uint32_t last_call_time;
 } interrupt;
 
 void interrupt_timer_init(void);
@@ -30,7 +31,8 @@ interrupt interrupts[NUM_INTERRUPTS];
   interrupts[irq_num].call_counter = 0U;   \
   interrupts[irq_num].call_rate = 0U;   \
   interrupts[irq_num].max_call_rate = (call_rate_max); \
-  interrupts[irq_num].call_rate_fault = (rate_fault);
+  interrupts[irq_num].call_rate_fault = (rate_fault); \
+  interrupts[irq_num].last_call_time = 0U;
 
 bool check_interrupt_rate = false;
 
@@ -41,8 +43,10 @@ uint32_t busy_time = 0U;
 float interrupt_load = 0.0f;
 uint8_t highest_irq_num = 0U;
 uint16_t highest_irq_rate = 0U;
+uint8_t longest_irq_num = 0U;
+uint32_t longest_irq_time = 0U;
 
-void handle_interrupt(IRQn_Type irq_type){
+void handle_interrupt(IRQn_Type irq_type) {
   ENTER_CRITICAL();
   if (interrupt_depth == 0U) {
     uint32_t time = microsecond_timer_get();
@@ -64,7 +68,9 @@ void handle_interrupt(IRQn_Type irq_type){
   interrupt_depth -= 1U;
   if (interrupt_depth == 0U) {
     uint32_t time = microsecond_timer_get();
-    busy_time += get_ts_elapsed(time, last_time);
+    uint32_t elapsed_time = get_ts_elapsed(time, last_time);
+    busy_time += elapsed_time;
+    interrupts[irq_type].last_call_time += elapsed_time;
     last_time = time;
   }
   EXIT_CRITICAL();
@@ -88,6 +94,13 @@ void interrupt_timer_handler(void) {
         highest_irq_rate = interrupts[i].call_rate;
         highest_irq_num = i;
       }
+
+      if (interrupts[i].last_call_time > longest_irq_time) {
+        longest_irq_time = interrupts[i].last_call_time;
+        longest_irq_num = i;
+      }
+
+      interrupts[i].last_call_time = 0U;
     }
 
     // Calculate interrupt load
