@@ -378,6 +378,12 @@ static int chrysler_fwd_hook(int bus_num, int addr) {
 }
 
 static const addr_checks* chrysler_init(uint16_t param) {
+#ifdef ALLOW_DEBUG
+  chrysler_longitudinal = GET_FLAG(param, CHRYSLER_PARAM_LONGITUDINAL);
+#else
+  chrysler_longitudinal = false;
+#endif
+
   if (GET_FLAG(param, CHRYSLER_PARAM_RAM_DT)) {
     chrysler_platform = CHRYSLER_RAM_DT;
     chrysler_addrs = &CHRYSLER_RAM_DT_ADDRS;
@@ -405,12 +411,6 @@ static const addr_checks* chrysler_init(uint16_t param) {
       chrysler_rx_checks = SET_ADDR_CHECKS(chrysler_addr_checks);
     }
   }
-
-#ifdef ALLOW_DEBUG
-  chrysler_longitudinal = GET_FLAG(param, CHRYSLER_PARAM_LONGITUDINAL);
-#else
-  chrysler_longitudinal = false;
-#endif
 
   return &chrysler_rx_checks;
 }
