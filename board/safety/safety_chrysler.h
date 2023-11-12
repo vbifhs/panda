@@ -88,14 +88,14 @@ const ChryslerAddrs CHRYSLER_RAM_HD_ADDRS = {
 
 // TODO: CRUISE_BUTTONS should only be allowed for stock longitudinal?
 #define CHRYSLER_COMMON_TX_MSGS(addrs, cruise_buttons_bus, lkas_cmd_len)  \
-  {addrs.CRUISE_BUTTONS, cruise_buttons_bus, 3},                          \
-  {addrs.LKAS_COMMAND, 0, lkas_cmd_len},                                  \
-  {addrs.DAS_6, 0, 8},                                                    \
+  {(addrs).CRUISE_BUTTONS, (cruise_buttons_bus), 3},                      \
+  {(addrs).LKAS_COMMAND, 0, (lkas_cmd_len)},                              \
+  {(addrs).DAS_6, 0, 8},                                                  \
 
 #define CHRYSLER_LONG_TX_MSGS(addrs)  \
-  {addrs.DAS_3, 0, 8},                \
-  {addrs.DAS_4, 0, 8},                \
-  {addrs.DAS_5, 0, 8},                \
+  {(addrs).DAS_3, 0, 8},              \
+  {(addrs).DAS_4, 0, 8},              \
+  {(addrs).DAS_5, 0, 8},              \
 
 const CanMsg CHRYSLER_TX_MSGS[] = {
   CHRYSLER_COMMON_TX_MSGS(CHRYSLER_ADDRS, 0, 6)
@@ -124,38 +124,33 @@ const CanMsg CHRYSLER_RAM_HD_LONG_TX_MSGS[] = {
   CHRYSLER_LONG_TX_MSGS(CHRYSLER_RAM_HD_ADDRS)
 };
 
-#define CHRYSLER_COMMON_ADDR_CHECKS(addrs)                                                                                \
-  {.msg = {{addrs.EPS_2, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 10000U}, { 0 }, { 0 }}},  \
-  {.msg = {{addrs.ESP_1, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},  \
-  {.msg = {{addrs.ECM_5, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},  \
+#define CHRYSLER_COMMON_ADDR_CHECKS(addrs)                                                                                  \
+  {.msg = {{(addrs).EPS_2, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 10000U}, { 0 }, { 0 }}},  \
+  {.msg = {{(addrs).ESP_1, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},  \
+  {.msg = {{(addrs).ECM_5, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},  \
 
 // TODO: use the same message for both (see vehicle_moving below)
-#define CHRYSLER_COMMON_ALT_ADDR_CHECKS(addrs)                                                                            \
-  {.msg = {{514, 0, 8, .check_checksum = false, .max_counter = 0U, .expected_timestep = 10000U}, { 0 }, { 0 }}},          \
+#define CHRYSLER_COMMON_ALT_ADDR_CHECKS()                                                                         \
+  {.msg = {{514, 0, 8, .check_checksum = false, .max_counter = 0U, .expected_timestep = 10000U}, { 0 }, { 0 }}},  \
 
-#define CHRYSLER_COMMON_RAM_ADDR_CHECKS(addrs)                                                                            \
-  {.msg = {{addrs.ESP_8, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},  \
+#define CHRYSLER_COMMON_RAM_ADDR_CHECKS(addrs)                                                                              \
+  {.msg = {{(addrs).ESP_8, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},  \
 
-#define CHRYSLER_COMMON_ADDR_CHECKS(addrs)                                                                                \
-  {.msg = {{addrs.EPS_2, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 10000U}, { 0 }, { 0 }}},  \
-  {.msg = {{addrs.ESP_1, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},  \
-  {.msg = {{addrs.ECM_5, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},  \
+#define CHRYSLER_ACC_ADDR_CHECKS(addrs)                                                                                     \
+  {.msg = {{(addrs).DAS_3, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},  \
 
-#define CHRYSLER_ACC_ADDR_CHECKS(addrs)                                                                                                   \
-  {.msg = {{CHRYSLER_RAM_DT_ADDRS.DAS_3, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},  \
-
-#define CHRYSLER_BUTTONS_ADDR_CHECKS(addrs)                                                                                       \
-  {.msg = {{addrs.CRUISE_BUTTONS, 0, 3, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}}, \
+#define CHRYSLER_BUTTONS_ADDR_CHECKS(addrs)                                                                                         \
+  {.msg = {{(addrs).CRUISE_BUTTONS, 0, 3, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}}, \
 
 AddrCheckStruct chrysler_addr_checks[] = {
   CHRYSLER_COMMON_ADDR_CHECKS(CHRYSLER_ADDRS)
-  CHRYSLER_COMMON_ALT_ADDR_CHECKS(CHRYSLER_ADDRS)
+  CHRYSLER_COMMON_ALT_ADDR_CHECKS()
   CHRYSLER_ACC_ADDR_CHECKS(CHRYSLER_ADDRS)
 };
 
 AddrCheckStruct chrysler_long_addr_checks[] = {
   CHRYSLER_COMMON_ADDR_CHECKS(CHRYSLER_ADDRS)
-  CHRYSLER_COMMON_ALT_ADDR_CHECKS(CHRYSLER_ADDRS)
+  CHRYSLER_COMMON_ALT_ADDR_CHECKS()
   CHRYSLER_BUTTONS_ADDR_CHECKS(CHRYSLER_ADDRS)
 };
 
@@ -187,7 +182,7 @@ addr_checks chrysler_rx_checks = SET_ADDR_CHECKS(chrysler_addr_checks);
 
 const uint32_t CHRYSLER_PARAM_RAM_DT = 1U;  // set for Ram DT platform
 const uint32_t CHRYSLER_PARAM_RAM_HD = 2U;  // set for Ram HD platform
-const uint32_t CHRYSLER_PARAM_LONGITUDINAL = 4;
+const uint32_t CHRYSLER_PARAM_LONGITUDINAL = 4U;
 
 enum {
   CHRYSLER_RAM_DT,
