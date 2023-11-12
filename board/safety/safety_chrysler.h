@@ -87,10 +87,10 @@ const ChryslerAddrs CHRYSLER_RAM_HD_ADDRS = {
 };
 
 // TODO: CRUISE_BUTTONS should only be allowed for stock longitudinal?
-#define CHRYSLER_COMMON_TX_MSGS(addrs, cruise_buttons_bus)  \
-  {addrs.CRUISE_BUTTONS, cruise_buttons_bus, 3},            \
-  {addrs.LKAS_COMMAND, 0, 6},                               \
-  {addrs.DAS_6, 0, 8},                                      \
+#define CHRYSLER_COMMON_TX_MSGS(addrs, cruise_buttons_bus, lkas_cmd_len)  \
+  {addrs.CRUISE_BUTTONS, cruise_buttons_bus, 3},                          \
+  {addrs.LKAS_COMMAND, 0, lkas_cmd_len},                                  \
+  {addrs.DAS_6, 0, 8},                                                    \
 
 #define CHRYSLER_LONG_TX_MSGS(addrs)  \
   {addrs.DAS_3, 0, 8},                \
@@ -98,29 +98,29 @@ const ChryslerAddrs CHRYSLER_RAM_HD_ADDRS = {
   {addrs.DAS_5, 0, 8},                \
 
 const CanMsg CHRYSLER_TX_MSGS[] = {
-  CHRYSLER_COMMON_TX_MSGS(CHRYSLER_ADDRS, 0)
+  CHRYSLER_COMMON_TX_MSGS(CHRYSLER_ADDRS, 0, 6)
 };
 
 const CanMsg CHRYSLER_LONG_TX_MSGS[] = {
-  CHRYSLER_COMMON_TX_MSGS(CHRYSLER_ADDRS, 0)
+  CHRYSLER_COMMON_TX_MSGS(CHRYSLER_ADDRS, 0, 6)
   CHRYSLER_LONG_TX_MSGS(CHRYSLER_ADDRS)
 };
 
 const CanMsg CHRYSLER_RAM_DT_TX_MSGS[] = {
-  CHRYSLER_COMMON_TX_MSGS(CHRYSLER_RAM_DT_ADDRS, 2)
+  CHRYSLER_COMMON_TX_MSGS(CHRYSLER_RAM_DT_ADDRS, 2, 8)
 };
 
 const CanMsg CHRYSLER_RAM_DT_LONG_TX_MSGS[] = {
-  CHRYSLER_COMMON_TX_MSGS(CHRYSLER_RAM_DT_ADDRS, 2)
+  CHRYSLER_COMMON_TX_MSGS(CHRYSLER_RAM_DT_ADDRS, 2, 8)
   CHRYSLER_LONG_TX_MSGS(CHRYSLER_RAM_DT_ADDRS)
 };
 
 const CanMsg CHRYSLER_RAM_HD_TX_MSGS[] = {
-  CHRYSLER_COMMON_TX_MSGS(CHRYSLER_RAM_HD_ADDRS, 2)
+  CHRYSLER_COMMON_TX_MSGS(CHRYSLER_RAM_HD_ADDRS, 2, 8)
 };
 
 const CanMsg CHRYSLER_RAM_HD_LONG_TX_MSGS[] = {
-  CHRYSLER_COMMON_TX_MSGS(CHRYSLER_RAM_HD_ADDRS, 2)
+  CHRYSLER_COMMON_TX_MSGS(CHRYSLER_RAM_HD_ADDRS, 2, 8)
   CHRYSLER_LONG_TX_MSGS(CHRYSLER_RAM_HD_ADDRS)
 };
 
