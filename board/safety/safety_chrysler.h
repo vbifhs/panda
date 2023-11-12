@@ -28,6 +28,14 @@ const SteeringLimits CHRYSLER_RAM_HD_STEERING_LIMITS = {
   .type = TorqueMotorLimited,
 };
 
+const LongitudinalLimits CHRYSLER_LONG_LIMITS = {
+  .max_accel = 819,   // 819 + 3276 (offset) = 4095 (max value)
+  .min_accel = -718,  // -718 x (20/4095) = -3.5 m/s^2
+  // TODO: what should max_gas limit be?
+  .max_gas = 2000,    //  2000 x .25 (scale) = 500.0 Nm
+  .min_gas = -2000,   // -2000 + 2000 (offset) = 0 (min value)
+};
+
 bool chrysler_longitudinal = false;
 bool accel_set_resume_button_prev = false;
 
@@ -336,6 +344,21 @@ static int chrysler_tx_hook(CANPacket_t *to_send) {
                                 
     bool steer_req = (chrysler_platform == CHRYSLER_PACIFICA) ? (GET_BIT(to_send, 4U) != 0U) : ((GET_BYTE(to_send, 3) & 0x7U) == 2U);
     if (steer_torque_cmd_checks(desired_torque, steer_req, limits)) {
+      tx = 0;
+    }
+  }
+
+  // ACCEL
+  if (tx && (addr == chrysler_addrs->DAS_3)) {
+    int gas = (((GET_BYTE(to_send, 0) & 0x1FU) << 8) | GET_BYTE(to_send, 1)) - 2000U;  // signal offset -500 x (signal max 8191 / signal range 2047.75) = -2000
+    int accel = (((GET_BYTE(to_send, 2) & 0xFU) << 8) | GET_BYTE(to_send, 3)) - 3276U; // signal offset -16 x (signal max 4095 / signal range 20 m/s^2) = -3276
+
+    bool violation = false;
+    violation |= longitudinal_accel_checks(accel, CHRYSLER_LONG_LIMITS);
+    violation |= longitudinal_gas_checks(gas, CHRYSLER_LONG_LIMITS);
+    // TODO: AEB check?
+
+    if (violation) {
       tx = 0;
     }
   }
