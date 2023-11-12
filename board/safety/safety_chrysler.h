@@ -29,7 +29,7 @@ const SteeringLimits CHRYSLER_RAM_HD_STEERING_LIMITS = {
 };
 
 const LongitudinalLimits CHRYSLER_LONG_LIMITS = {
-  .max_accel = 819,   // 819 + 3276 (offset) = 4095 (max value)
+  .max_accel = 410,   //  410 x (20/4095) = 2.0 m/s^2
   .min_accel = -718,  // -718 x (20/4095) = -3.5 m/s^2
   // TODO: what should max_gas limit be?
   .max_gas = 2000,    //  2000 x .25 (scale) = 500.0 Nm
@@ -37,7 +37,7 @@ const LongitudinalLimits CHRYSLER_LONG_LIMITS = {
 };
 
 bool chrysler_longitudinal = false;
-bool accel_set_resume_button_prev = false;
+bool accel_decel_resume_button_prev = false;
 
 typedef struct {
   const int EPS_2;
@@ -58,9 +58,9 @@ const ChryslerAddrs CHRYSLER_ADDRS = {
   .ESP_1            = 0x140,  // Brake pedal and vehicle speed
   .ESP_8            = 0x11C,  // Brake pedal and vehicle speed
   .ECM_5            = 0x22F,  // Throttle position sensor
-  .DAS_3            = 0x1F4,  // ACC engagement states from DASM
-  .DAS_4            = 0x1F5,  // ACC engagement states from DASM
-  .DAS_5            = 0x271,  // ACC engagement states from DASM
+  .DAS_3            = 0x1F4,  // ACC state and control from DASM
+  .DAS_4            = 0x1F5,  // ACC and FCW dispaly and config from DASM
+  .DAS_5            = 0x271,  // ACC and FCW dispaly and config from DASM
   .DAS_6            = 0x2A6,  // LKAS HUD and auto headlight control from DASM
   .LKAS_COMMAND     = 0x292,  // LKAS controls from DASM
   .CRUISE_BUTTONS   = 0x23B,  // Cruise control buttons
@@ -72,9 +72,9 @@ const ChryslerAddrs CHRYSLER_RAM_DT_ADDRS = {
   .ESP_1            = 0x83,   // Brake pedal and vehicle speed
   .ESP_8            = 0x79,   // Brake pedal and vehicle speed
   .ECM_5            = 0x9D,   // Throttle position sensor
-  .DAS_3            = 0x99,   // ACC engagement states from DASM
-  .DAS_4            = 0xE8,   // ACC engagement states from DASM
-  .DAS_5            = 0xA3,   // ACC engagement states from DASM
+  .DAS_3            = 0x99,   // ACC state and control from DASM
+  .DAS_4            = 0xE8,   // ACC and FCW dispaly and config from DASM
+  .DAS_5            = 0xA3,   // ACC and FCW dispaly and config from DASM
   .DAS_6            = 0xFA,   // LKAS HUD and auto headlight control from DASM
   .LKAS_COMMAND     = 0xA6,   // LKAS controls from DASM
   .CRUISE_BUTTONS   = 0xB1,   // Cruise control buttons
@@ -86,9 +86,9 @@ const ChryslerAddrs CHRYSLER_RAM_HD_ADDRS = {
   .ESP_1            = 0x140,  // Brake pedal and vehicle speed
   .ESP_8            = 0x11C,  // Brake pedal and vehicle speed
   .ECM_5            = 0x22F,  // Throttle position sensor
-  .DAS_3            = 0x1F4,  // ACC engagement states from DASM
-  .DAS_4            = 0x1F5,  // ACC engagement states from DASM
-  .DAS_5            = 0x271,  // ACC engagement states from DASM
+  .DAS_3            = 0x1F4,  // ACC state and control from DASM
+  .DAS_4            = 0x1F5,  // ACC and FCW dispaly and config from DASM
+  .DAS_5            = 0x271,  // ACC and FCW dispaly and config from DASM
   .DAS_6            = 0x275,  // LKAS HUD and auto headlight control from DASM
   .LKAS_COMMAND     = 0x276,  // LKAS controls from DASM
   .CRUISE_BUTTONS   = 0x23A,  // Cruise control buttons
@@ -254,10 +254,10 @@ static int chrysler_rx_hook(CANPacket_t *to_push) {
 
     if ((bus == 0) && (addr == chrysler_addrs->CRUISE_BUTTONS) && chrysler_longitudinal) {
       bool cancel_button = GET_BIT(to_push, 0U);
-      bool accel_set_resume_button = GET_BIT(to_push, 2U) || GET_BIT(to_push, 3U) || GET_BIT(to_push, 4U);
+      bool accel_decel_resume_button = !cancel_button && (GET_BIT(to_push, 2U) || GET_BIT(to_push, 3U) || GET_BIT(to_push, 4U));
 
       // enter controls on falling edge of resume or set
-      if (!accel_set_resume_button && accel_set_resume_button_prev) {
+      if (!accel_decel_resume_button && accel_decel_resume_button_prev) {
         controls_allowed = true;
       }
 
@@ -266,7 +266,7 @@ static int chrysler_rx_hook(CANPacket_t *to_push) {
         controls_allowed = false;
       }
 
-      accel_set_resume_button_prev = accel_set_resume_button;
+      accel_decel_resume_button_prev = accel_decel_resume_button;
     }
 
     // Measured EPS torque
@@ -380,8 +380,8 @@ static int chrysler_fwd_hook(int bus_num, int addr) {
   int bus_fwd = -1;
 
   // forward to camera
-  const bool is_button = (addr == chrysler_addrs->CRUISE_BUTTONS);
-  if ((bus_num == 0) && (!chrysler_longitudinal || !is_button)) {
+  const bool is_buttons = (addr == chrysler_addrs->CRUISE_BUTTONS);
+  if ((bus_num == 0) && (!chrysler_longitudinal || !is_buttons)) {
     bus_fwd = 2;
   }
 
