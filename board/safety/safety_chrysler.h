@@ -391,18 +391,18 @@ static const addr_checks* chrysler_init(uint16_t param) {
     chrysler_platform = CHRYSLER_RAM_HD;
     chrysler_addrs = &CHRYSLER_RAM_HD_ADDRS;
     if (chrysler_longitudinal) {
-      chrysler_rx_checks = SET_ADDR_CHECKS(chrysler_ram_hd_addr_checks);
-    } else {
       chrysler_rx_checks = SET_ADDR_CHECKS(chrysler_ram_hd_long_addr_checks);
+    } else {
+      chrysler_rx_checks = SET_ADDR_CHECKS(chrysler_ram_hd_addr_checks);
     }
 #endif
   } else {
     chrysler_platform = CHRYSLER_PACIFICA;
     chrysler_addrs = &CHRYSLER_ADDRS;
     if (chrysler_longitudinal) {
-      chrysler_rx_checks = SET_ADDR_CHECKS(chrysler_addr_checks);
-    } else {
       chrysler_rx_checks = SET_ADDR_CHECKS(chrysler_long_addr_checks);
+    } else {
+      chrysler_rx_checks = SET_ADDR_CHECKS(chrysler_addr_checks);
     }
   }
 
