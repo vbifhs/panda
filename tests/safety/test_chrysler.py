@@ -26,6 +26,8 @@ class TestChryslerSafety(common.PandaCarSafetyTest, common.MotorTorqueSteeringSa
 
   DAS_BUS = 0
 
+  cnt_button = 0
+
   def setUp(self):
     self.packer = CANPackerPanda("chrysler_pacifica_2017_hybrid_generated")
     self.safety = libpanda_py.libpanda
@@ -33,7 +35,8 @@ class TestChryslerSafety(common.PandaCarSafetyTest, common.MotorTorqueSteeringSa
     self.safety.init_tests()
 
   def _button_msg(self, cancel=False, resume=False, accel=False, decel=False):
-    values = {"ACC_Cancel": cancel, "ACC_Resume": resume, "ACC_Accel": accel, "ACC_Decel": decel}
+    values = {"ACC_Cancel": cancel, "ACC_Resume": resume, "ACC_Accel": accel, "ACC_Decel": decel, "COUNTER": self.cnt_button}
+    self.cnt_button += 1
     return self.packer.make_can_msg_panda("CRUISE_BUTTONS", self.DAS_BUS, values)
 
   def _pcm_status_msg(self, enable):
@@ -97,6 +100,7 @@ class TestChryslerRamDTSafety(TestChryslerSafety):
   def _speed_msg(self, speed):
     values = {"Vehicle_Speed": speed}
     return self.packer.make_can_msg_panda("ESP_8", 0, values)
+
 
 class TestChryslerRamHDSafety(TestChryslerSafety):
   TX_MSGS = [[0x23A, 2], [0x275, 0], [0x276, 0]]

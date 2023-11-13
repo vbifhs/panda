@@ -238,7 +238,8 @@ static uint32_t chrysler_compute_checksum(CANPacket_t *to_push) {
 }
 
 static uint8_t chrysler_get_counter(CANPacket_t *to_push) {
-  return (uint8_t)(GET_BYTE(to_push, 6) >> 4);
+  int counter_byte = GET_LEN(to_push) - 2U;
+  return (uint8_t)(GET_BYTE(to_push, counter_byte) >> 4);
 }
 
 static int chrysler_rx_hook(CANPacket_t *to_push) {
@@ -356,7 +357,6 @@ static int chrysler_tx_hook(CANPacket_t *to_send) {
     bool violation = false;
     violation |= longitudinal_accel_checks(accel, CHRYSLER_LONG_LIMITS);
     violation |= longitudinal_gas_checks(gas, CHRYSLER_LONG_LIMITS);
-    // TODO: AEB check?
 
     if (violation) {
       tx = 0;
