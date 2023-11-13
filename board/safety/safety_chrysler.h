@@ -144,46 +144,46 @@ const CanMsg CHRYSLER_RAM_HD_LONG_TX_MSGS[] = {
 #define CHRYSLER_COMMON_RAM_ADDR_CHECKS(addrs)                                                                              \
   {.msg = {{(addrs).ESP_8, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},  \
 
-#define CHRYSLER_COMMON_ACC_ADDR_CHECKS(addrs)                                                                                     \
-  {.msg = {{(addrs).DAS_3, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},  \
+#define CHRYSLER_COMMON_ACC_ADDR_CHECKS(addrs, das_3_bus)                                                                             \
+  {.msg = {{(addrs).DAS_3, (das_3_bus), 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}},  \
 
-#define CHRYSLER_COMMON_BUTTONS_ADDR_CHECKS(addrs)                                                                                         \
+#define CHRYSLER_COMMON_BUTTONS_ADDR_CHECKS(addrs)                                                                                  \
   {.msg = {{(addrs).CRUISE_BUTTONS, 0, 3, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}, { 0 }, { 0 }}}, \
 
 AddrCheckStruct chrysler_addr_checks[] = {
   CHRYSLER_COMMON_ADDR_CHECKS(CHRYSLER_ADDRS)
   CHRYSLER_COMMON_ALT_ADDR_CHECKS()
-  CHRYSLER_COMMON_ACC_ADDR_CHECKS(CHRYSLER_ADDRS)
+  CHRYSLER_COMMON_ACC_ADDR_CHECKS(CHRYSLER_ADDRS, 0)
 };
 
 AddrCheckStruct chrysler_long_addr_checks[] = {
   CHRYSLER_COMMON_ADDR_CHECKS(CHRYSLER_ADDRS)
   CHRYSLER_COMMON_ALT_ADDR_CHECKS()
-  CHRYSLER_COMMON_ACC_ADDR_CHECKS(CHRYSLER_ADDRS)
+  CHRYSLER_COMMON_BUTTONS_ADDR_CHECKS(CHRYSLER_ADDRS)
 };
 
 AddrCheckStruct chrysler_ram_dt_addr_checks[] = {
   CHRYSLER_COMMON_ADDR_CHECKS(CHRYSLER_RAM_DT_ADDRS)
   CHRYSLER_COMMON_RAM_ADDR_CHECKS(CHRYSLER_RAM_DT_ADDRS)
-  CHRYSLER_COMMON_ACC_ADDR_CHECKS(CHRYSLER_RAM_DT_ADDRS)
+  CHRYSLER_COMMON_ACC_ADDR_CHECKS(CHRYSLER_RAM_DT_ADDRS, 2)
 };
 
 AddrCheckStruct chrysler_ram_dt_long_addr_checks[] = {
   CHRYSLER_COMMON_ADDR_CHECKS(CHRYSLER_RAM_DT_ADDRS)
   CHRYSLER_COMMON_RAM_ADDR_CHECKS(CHRYSLER_RAM_DT_ADDRS)
-  CHRYSLER_COMMON_ACC_ADDR_CHECKS(CHRYSLER_RAM_DT_ADDRS)
+  CHRYSLER_COMMON_BUTTONS_ADDR_CHECKS(CHRYSLER_RAM_DT_ADDRS)
 };
 
 AddrCheckStruct chrysler_ram_hd_addr_checks[] = {
   CHRYSLER_COMMON_ADDR_CHECKS(CHRYSLER_RAM_HD_ADDRS)
   CHRYSLER_COMMON_RAM_ADDR_CHECKS(CHRYSLER_RAM_HD_ADDRS)
-  CHRYSLER_COMMON_ACC_ADDR_CHECKS(CHRYSLER_RAM_HD_ADDRS)
+  CHRYSLER_COMMON_ACC_ADDR_CHECKS(CHRYSLER_RAM_HD_ADDRS, 2)
 };
 
 AddrCheckStruct chrysler_ram_hd_long_addr_checks[] = {
   CHRYSLER_COMMON_ADDR_CHECKS(CHRYSLER_RAM_HD_ADDRS)
   CHRYSLER_COMMON_RAM_ADDR_CHECKS(CHRYSLER_RAM_HD_ADDRS)
-  CHRYSLER_COMMON_ACC_ADDR_CHECKS(CHRYSLER_RAM_HD_ADDRS)
+  CHRYSLER_COMMON_BUTTONS_ADDR_CHECKS(CHRYSLER_RAM_HD_ADDRS)
 };
 
 addr_checks chrysler_rx_checks = SET_ADDR_CHECKS(chrysler_addr_checks);
