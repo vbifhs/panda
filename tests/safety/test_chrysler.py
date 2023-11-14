@@ -198,9 +198,8 @@ class ChryslerLongitudinalBase(common.PandaSafetyTestBase):
                                      test_delta=10, inactive_value=self.INACTIVE_ENGINE_TORQUE)
 
   def test_buttons(self):
-    button_combinations = set(itertools.permutations([0,0,0,0,1,1,1,1], 4))
-    for cancel_cur, resume_cur, accel_cur, decel_cur in button_combinations:
-      for cancel_prev, resume_prev, accel_prev, decel_prev in button_combinations:
+    for cancel_cur, resume_cur, accel_cur, decel_cur in itertools.product([0, 1], repeat=4):
+      for cancel_prev, resume_prev, accel_prev, decel_prev in itertools.product([0, 1], repeat=4):
         self._rx(self._button_msg(cancel=False, resume=False, accel=False, decel=False))
         self.safety.set_controls_allowed(0)
         for _ in range(10):
