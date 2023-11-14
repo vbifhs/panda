@@ -29,11 +29,17 @@ const SteeringLimits CHRYSLER_RAM_HD_STEERING_LIMITS = {
 };
 
 const LongitudinalLimits CHRYSLER_LONG_LIMITS = {
-  .max_accel = 410,   //  410 x (20/4095) = 2.0 m/s^2
-  .min_accel = -718,  // -718 x (20/4095) = -3.5 m/s^2
-  // TODO: what should max_gas limit be?
-  .max_gas = 2000,    //  2000 x .25 (scale) = 500.0 Nm
-  .min_gas = -2000,   // -2000 + 2000 (offset) = 0 (min value)
+  // acceleration cmd limits (used for brakes)
+  // Signal: ACC_DECEL
+  .max_accel = 3685,      // 3685 x 0.004885 - 16 =  2.0 m/s^2
+  .min_accel = 2558,      // 2558 x 0.004885 - 16 = -3.5 m/s^2
+  .inactive_accel = 4094, // 4094 x 0.004885 - 16 =  4.0 m/s^2
+
+  // gas cmd limits
+  // Signal: ENGINE_TORQUE_REQUEST
+  .max_gas = 4000,      // 4000 x .25 - 500 =  500.0 Nm
+  .min_gas = 0,         //    0 x .25 - 500 = -500.0 Nm
+  .inactive_gas = 2000, // 2000 x .25 - 500 =    0.0 Nm
 };
 
 bool chrysler_longitudinal = false;
@@ -351,8 +357,10 @@ static int chrysler_tx_hook(CANPacket_t *to_send) {
 
   // ACCEL
   if (tx && (addr == chrysler_addrs->DAS_3)) {
-    int gas = (((GET_BYTE(to_send, 0) & 0x1FU) << 8) | GET_BYTE(to_send, 1)) - 2000U;  // signal offset -500 x (signal max 8191 / signal range 2047.75) = -2000
-    int accel = (((GET_BYTE(to_send, 2) & 0xFU) << 8) | GET_BYTE(to_send, 3)) - 3276U; // signal offset -16 x (signal max 4095 / signal range 20 m/s^2) = -3276
+    // Signal: ENGINE_TORQUE_REQUEST
+    int gas = (((GET_BYTE(to_send, 0) & 0x1FU) << 8) | GET_BYTE(to_send, 1));
+    // Signal: ACC_DECEL
+    int accel = (((GET_BYTE(to_send, 2) & 0xFU) << 8) | GET_BYTE(to_send, 3));
 
     bool violation = false;
     violation |= longitudinal_accel_checks(accel, CHRYSLER_LONG_LIMITS);

@@ -134,11 +134,13 @@ class ChryslerLongitudinalBase(common.PandaSafetyTestBase):
 
   MIN_ENGINE_TORQUE = -500
   MAX_ENGINE_TORQUE = 500
+  INACTIVE_ENGINE_TORQUE = 0
   MIN_POSSIBLE_ENGINE_TORQUE = -500
   MAX_POSSIBLE_ENGINE_TORQUE = 1548
 
   MIN_ACCEL = -3.5
   MAX_ACCEL = 2.0
+  INACTIVE_ACCEL = 4.0
   MIN_POSSIBLE_ACCEL = -16.0
   MAX_POSSIBLE_ACCEL = 4.0
 
@@ -179,21 +181,21 @@ class ChryslerLongitudinalBase(common.PandaSafetyTestBase):
     return self.packer.make_can_msg_panda("DAS_3", self.DAS_BUS, values)
 
   def _send_accel_msg(self, accel):
-    return self._send_torque_accel_msg(1, 0, 0, 1, accel)
+    return self._send_torque_accel_msg(1, 0, self.INACTIVE_ENGINE_TORQUE, 1, accel)
 
   def _send_torque_msg(self, torque):
-    return self._send_torque_accel_msg(1, 1, torque, 0, 0)
+    return self._send_torque_accel_msg(1, 1, torque, 0, self.INACTIVE_ACCEL)
 
   def test_accel_torque_safety_check(self):
-    # TODO: test sending torque and accel at the same time? (prevent gas and brakes at the same time?)
+    # TODO: test enable flags blocked when controls not allowed
     self._generic_limit_safety_check(self._send_accel_msg,
                                      self.MIN_ACCEL, self.MAX_ACCEL,
                                      self.MIN_POSSIBLE_ACCEL, self.MAX_POSSIBLE_ACCEL,
-                                     test_delta=0.1, inactive_value=None)
+                                     test_delta=0.1, inactive_value=self.INACTIVE_ACCEL)
     self._generic_limit_safety_check(self._send_torque_msg,
                                      self.MIN_ENGINE_TORQUE, self.MAX_ENGINE_TORQUE,
                                      self.MIN_POSSIBLE_ENGINE_TORQUE, self.MAX_POSSIBLE_ENGINE_TORQUE,
-                                     test_delta=10, inactive_value=None)
+                                     test_delta=10, inactive_value=self.INACTIVE_ENGINE_TORQUE)
 
   def test_buttons(self):
     button_combinations = set(itertools.permutations([0,0,0,0,1,1,1,1], 4))
