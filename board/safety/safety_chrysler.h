@@ -100,7 +100,6 @@ const ChryslerAddrs CHRYSLER_RAM_HD_ADDRS = {
   .CRUISE_BUTTONS   = 0x23A,  // Cruise control buttons
 };
 
-// TODO: CRUISE_BUTTONS should only be allowed for stock longitudinal?
 #define CHRYSLER_COMMON_TX_MSGS(addrs, cruise_buttons_bus, lkas_cmd_len)  \
   {(addrs).CRUISE_BUTTONS, (cruise_buttons_bus), 3},                      \
   {(addrs).LKAS_COMMAND, 0, (lkas_cmd_len)},                              \
