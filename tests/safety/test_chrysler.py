@@ -187,7 +187,6 @@ class ChryslerLongitudinalBase(common.PandaSafetyTestBase):
     return self._send_torque_accel_msg(1, 1, torque, 0, self.INACTIVE_ACCEL)
 
   def test_accel_torque_safety_check(self):
-    # TODO: test enable flags blocked when controls not allowed
     self._generic_limit_safety_check(self._send_accel_msg,
                                      self.MIN_ACCEL, self.MAX_ACCEL,
                                      self.MIN_POSSIBLE_ACCEL, self.MAX_POSSIBLE_ACCEL,
