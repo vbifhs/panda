@@ -42,8 +42,15 @@ const LongitudinalLimits CHRYSLER_LONG_LIMITS = {
   .inactive_gas = 2000, // 2000 x .25 - 500 =    0.0 Nm
 };
 
+enum {
+  CHRYSLER_BTN_NONE = 0,
+  CHRYSLER_BTN_CANCEL = 1,
+  CHRYSLER_BTN_ACCEL = 4,
+  CHRYSLER_BTN_DECEL = 8,
+  CHRYSLER_BTN_RESUME = 16,
+};
+
 bool chrysler_longitudinal = false;
-bool accel_decel_resume_button_prev = false;
 
 typedef struct {
   const int EPS_2;
@@ -259,20 +266,28 @@ static int chrysler_rx_hook(CANPacket_t *to_push) {
   if (valid) {
 
     if ((bus == 0) && (addr == chrysler_addrs->CRUISE_BUTTONS) && chrysler_longitudinal) {
-      bool cancel_button = GET_BIT(to_push, 0U);
-      bool accel_decel_resume_button = !cancel_button && (GET_BIT(to_push, 2U) || GET_BIT(to_push, 3U) || GET_BIT(to_push, 4U));
+      int cruise_button = GET_BIT(to_push, 0U);
+      // ensure cancel overrides any multi-button pressed state
+      if (!cruise_button) {
+        cruise_button |= GET_BIT(to_push, 2U) << 2U;
+        cruise_button |= GET_BIT(to_push, 3U) << 3U;
+        cruise_button |= GET_BIT(to_push, 4U) << 4U;
+      }
 
       // enter controls on falling edge of resume or set
-      if (!accel_decel_resume_button && accel_decel_resume_button_prev) {
+      bool accel = (cruise_button != CHRYSLER_BTN_ACCEL) && (cruise_button_prev == CHRYSLER_BTN_ACCEL);
+      bool decel = (cruise_button != CHRYSLER_BTN_DECEL) && (cruise_button_prev == CHRYSLER_BTN_DECEL);
+      bool resume = (cruise_button != CHRYSLER_BTN_RESUME) && (cruise_button_prev == CHRYSLER_BTN_RESUME);
+      if (accel || decel || resume) {
         controls_allowed = true;
       }
 
       // exit controls on cancel press
-      if (cancel_button) {
+      if (cruise_button == CHRYSLER_BTN_CANCEL) {
         controls_allowed = false;
       }
 
-      accel_decel_resume_button_prev = accel_decel_resume_button;
+      cruise_button_prev = cruise_button;
     }
 
     // Measured EPS torque
