@@ -7,6 +7,7 @@ from panda.tests.libpanda import libpanda_py
 import panda.tests.safety.common as common
 from panda.tests.safety.common import CANPackerPanda
 
+from openpilot.selfdrive.car.chrysler.interface import BUTTONS_DICT
 
 class TestChryslerSafety(common.PandaCarSafetyTest, common.MotorTorqueSteeringSafetyTest):
   TX_MSGS = [[0x23B, 0], [0x292, 0], [0x2A6, 0]]
@@ -206,9 +207,9 @@ class ChryslerLongitudinalBase(common.PandaSafetyTestBase):
           self.assertFalse(self.safety.get_controls_allowed())
 
         # should enter controls allowed on falling edge and not transitioning to cancel
-        should_enable = not cancel_cur and not cancel_prev and \
-                        any([resume_prev, accel_prev, decel_prev]) and \
-                        not any([resume_cur, accel_cur, decel_cur])
+        button_cur = BUTTONS_DICT.get(cancel_cur if cancel_cur else (resume_cur << 2) | (accel_cur << 3) | (decel_cur << 4))
+        button_prev = BUTTONS_DICT.get(cancel_prev if cancel_prev else (resume_prev << 2) | (accel_prev << 3) | (decel_prev << 4))
+        should_enable = not cancel_cur and not cancel_prev and button_prev is not None and button_prev != button_cur
 
         self._rx(self._button_msg(cancel_cur, resume_cur, accel_cur, decel_cur))
         self.assertEqual(should_enable, self.safety.get_controls_allowed())
