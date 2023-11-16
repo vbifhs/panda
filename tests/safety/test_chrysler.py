@@ -7,8 +7,6 @@ from panda.tests.libpanda import libpanda_py
 import panda.tests.safety.common as common
 from panda.tests.safety.common import CANPackerPanda
 
-from openpilot.selfdrive.car.chrysler.interface import BUTTONS_DICT
-
 class TestChryslerSafety(common.PandaCarSafetyTest, common.MotorTorqueSteeringSafetyTest):
   TX_MSGS = [[0x23B, 0], [0x292, 0], [0x2A6, 0]]
   STANDSTILL_THRESHOLD = 0
@@ -198,6 +196,7 @@ class ChryslerLongitudinalBase(common.PandaSafetyTestBase):
                                      test_delta=10, inactive_value=self.INACTIVE_ENGINE_TORQUE)
 
   def test_buttons(self):
+    enable_buttons = {1 << 2: "resume", 1 << 3: "accel", 1 << 4: "decel"}
     for cancel_cur, resume_cur, accel_cur, decel_cur in itertools.product([0, 1], repeat=4):
       for cancel_prev, resume_prev, accel_prev, decel_prev in itertools.product([0, 1], repeat=4):
         self._rx(self._button_msg(cancel=False, resume=False, accel=False, decel=False))
@@ -207,8 +206,8 @@ class ChryslerLongitudinalBase(common.PandaSafetyTestBase):
           self.assertFalse(self.safety.get_controls_allowed())
 
         # should enter controls allowed on falling edge and not transitioning to cancel
-        button_cur = BUTTONS_DICT.get(cancel_cur if cancel_cur else (resume_cur << 2) | (accel_cur << 3) | (decel_cur << 4))
-        button_prev = BUTTONS_DICT.get(cancel_prev if cancel_prev else (resume_prev << 2) | (accel_prev << 3) | (decel_prev << 4))
+        button_cur = enable_buttons.get(cancel_cur if cancel_cur else (resume_cur << 2) | (accel_cur << 3) | (decel_cur << 4))
+        button_prev = enable_buttons.get(cancel_prev if cancel_prev else (resume_prev << 2) | (accel_prev << 3) | (decel_prev << 4))
         should_enable = not cancel_cur and not cancel_prev and button_prev is not None and button_prev != button_cur
 
         self._rx(self._button_msg(cancel_cur, resume_cur, accel_cur, decel_cur))

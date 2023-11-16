@@ -274,7 +274,7 @@ static int chrysler_rx_hook(CANPacket_t *to_push) {
         cruise_button |= GET_BIT(to_push, 4U) << 4U;
       }
 
-      // enter controls on falling edge of resume or set
+      // enter controls on falling edge of accel/decel/resume
       bool accel = (cruise_button != CHRYSLER_BTN_ACCEL) && (cruise_button_prev == CHRYSLER_BTN_ACCEL);
       bool decel = (cruise_button != CHRYSLER_BTN_DECEL) && (cruise_button_prev == CHRYSLER_BTN_DECEL);
       bool resume = (cruise_button != CHRYSLER_BTN_RESUME) && (cruise_button_prev == CHRYSLER_BTN_RESUME);
