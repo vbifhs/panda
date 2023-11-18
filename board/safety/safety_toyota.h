@@ -1,7 +1,7 @@
 const SteeringLimits TOYOTA_STEERING_LIMITS = {
-  .max_steer = 1500,
-  .max_rate_up = 15,          // ramp up slow
-  .max_rate_down = 25,        // ramp down fast
+  .max_steer = 1150,
+  .max_rate_up = 10,          // ramp up slow
+  .max_rate_down = 10,        // ramp down fast
   .max_torque_error = 350,    // max torque cmd in excess of motor torque
   .max_rt_delta = 450,        // the real time limit is 1800/sec, a 20% buffer
   .max_rt_interval = 250000,
@@ -33,9 +33,11 @@ const CanMsg TOYOTA_TX_MSGS[] = {{0x283, 0, 7}, {0x2E6, 0, 8}, {0x2E7, 0, 8}, {0
                                  {0x200, 0, 6}};  // interceptor
 
 AddrCheckStruct toyota_addr_checks[] = {
-  {.msg = {{ 0xaa, 0, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
+  {.msg = {{ 0xB0, 1, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
+  {.msg = {{ 0xB2, 1, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
   {.msg = {{0x260, 0, 8, .check_checksum = true, .expected_timestep = 20000U}, { 0 }, { 0 }}},
-  {.msg = {{0x1D2, 0, 8, .check_checksum = true, .expected_timestep = 30000U}, { 0 }, { 0 }}},
+  {.msg = {{0x689, 1, 8, .check_checksum = false, .expected_timestep = 1000000U}, { 0 }, { 0 }}},
+  {.msg = {{0x2C1, 1, 8, .check_checksum = false, .expected_timestep = 32000U}, { 0 }, { 0 }}},																																			 
   {.msg = {{0x224, 0, 8, .check_checksum = false, .expected_timestep = 25000U},
            {0x226, 0, 8, .check_checksum = false, .expected_timestep = 25000U}, { 0 }}},
 };
@@ -74,6 +76,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
   bool valid = addr_safety_check(to_push, &toyota_rx_checks,
                                  toyota_get_checksum, toyota_compute_checksum, NULL, NULL);
 
+
   if (valid && (GET_BUS(to_push) == 0U)) {
     int addr = GET_ADDR(to_push);
 
@@ -83,7 +86,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
       torque_meas_new = to_signed(torque_meas_new, 16);
 
       // scale by dbc_factor
-      torque_meas_new = (torque_meas_new * toyota_dbc_eps_torque_factor) / 100;
+      torque_meas_new = (torque_meas_new * 1.8f) // 100;
 
       // update array of sample
       update_sample(&torque_meas, torque_meas_new);
@@ -93,43 +96,43 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
       torque_meas.max++;
     }
 
-    // enter controls on rising edge of ACC, exit controls on ACC off
-    // exit controls on rising edge of gas press
-    if (addr == 0x1D2) {
-      // 5th bit is CRUISE_ACTIVE
-      bool cruise_engaged = GET_BIT(to_push, 5U) != 0U;
-      pcm_cruise_check(cruise_engaged);
-
-      // sample gas pedal
-      if (!gas_interceptor_detected) {
-        gas_pressed = GET_BIT(to_push, 4U) == 0U;
-      }
-    }
-
-    if (addr == 0xaa) {
-      // check that all wheel speeds are at zero value with offset
-      bool standstill = (GET_BYTES(to_push, 0, 4) == 0x6F1A6F1AU) && (GET_BYTES(to_push, 4, 4) == 0x6F1A6F1AU);
-      vehicle_moving = !standstill;
-    }
-
     // most cars have brake_pressed on 0x226, corolla and rav4 on 0x224
     if (((addr == 0x224) && toyota_alt_brake) || ((addr == 0x226) && !toyota_alt_brake)) {
       uint8_t bit = (addr == 0x224) ? 5U : 37U;
       brake_pressed = GET_BIT(to_push, bit) != 0U;
     }
 
-    // sample gas interceptor
-    if (addr == 0x201) {
-      gas_interceptor_detected = 1;
-      int gas_interceptor = TOYOTA_GET_INTERCEPTOR(to_push);
-      gas_pressed = gas_interceptor > TOYOTA_GAS_INTERCEPTOR_THRSLD;
+  }
 
-      // TODO: remove this, only left in for gas_interceptor_prev test
-      gas_interceptor_prev = gas_interceptor;
+  if (valid && (GET_BUS(to_push) == 1U)) {
+    int addr = GET_ADDR(to_push);
+    
+    if (addr == 0x689) {
+      // 17th bit is CRUISE_ACTIVE
+      bool cruise_engaged = GET_BIT(to_push, 17U) != 0U;
+      pcm_cruise_check(cruise_engaged);
+    };
+
+        
+    if (!gas_interceptor_detected){
+      //Lexus_LS Gas Pedal
+      if(addr == 0x2C1){
+        gas_pressed = ( (GET_BYTE(to_push, 6) << 8) | (GET_BYTE(to_push, 7)) ) > 1000; //pedal is really sensitive
+      }
     }
 
-    generic_rx_checks((addr == 0x2E4));
+    //Lexus_LS Wheel Speeds check
+    if (addr == 0xB0 || addr == 0xB2) {
+        bool standstill = (GET_BYTE(to_push, 0) == 0x00) && (GET_BYTE(to_push, 1) == 0x00) && (GET_BYTE(to_push, 2) == 0x00) && (GET_BYTE(to_push, 3) == 0x00);
+        vehicle_moving = !standstill;
+    }
+
+
   }
+
+  generic_rx_checks((addr == 0x180));
+  }
+
   return valid;
 }
 
