@@ -101,7 +101,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
       uint8_t bit = (addr == 0x224) ? 5U : 37U;
       brake_pressed = GET_BIT(to_push, bit) != 0U;
     }
-
+    generic_rx_checks((addr == 0x180));
   }
 
   if (valid && (GET_BUS(to_push) == 1U)) {
@@ -127,10 +127,10 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
         vehicle_moving = !standstill;
     }
 
-
+    generic_rx_checks((addr == 0x180));
   }
 
-  generic_rx_checks((addr == 0x180));
+  
   }
 
   return valid;
