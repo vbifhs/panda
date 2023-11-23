@@ -27,10 +27,12 @@ const LongitudinalLimits TOYOTA_LONG_LIMITS = {
 const int TOYOTA_GAS_INTERCEPTOR_THRSLD = 805;
 #define TOYOTA_GET_INTERCEPTOR(msg) (((GET_BYTE((msg), 0) << 8) + GET_BYTE((msg), 1) + (GET_BYTE((msg), 2) << 8) + GET_BYTE((msg), 3)) / 2U) // avg between 2 tracks
 
-const CanMsg TOYOTA_TX_MSGS[] = {{0x283, 0, 7}, {0x2E6, 0, 8}, {0x2E7, 0, 8}, {0x33E, 0, 7}, {0x344, 0, 8}, {0x365, 0, 7}, {0x366, 0, 7}, {0x4CB, 0, 8},  // DSU bus 0
-                                 {0x128, 1, 6}, {0x141, 1, 4}, {0x160, 1, 8}, {0x161, 1, 7}, {0x470, 1, 4},  // DSU bus 1
-                                 {0x180, 0, 5}, {0x191, 0, 8}, {0x411, 0, 8}, {0x412, 0, 8}, {0x280, 0, 8}, {0x1D2, 0, 8},  // LKAS + ACC
-                                 {0x200, 0, 6}};  // interceptor
+// const CanMsg TOYOTA_TX_MSGS[] = {{0x283, 0, 7}, {0x2E6, 0, 8}, {0x2E7, 0, 8}, {0x33E, 0, 7}, {0x344, 0, 8}, {0x365, 0, 7}, {0x366, 0, 7}, {0x4CB, 0, 8},  // DSU bus 0
+//                                  {0x128, 1, 6}, {0x141, 1, 4}, {0x160, 1, 8}, {0x161, 1, 7}, {0x470, 1, 4},  // DSU bus 1
+//                                  {0x2E4, 0, 5}, {0x191, 0, 8}, {0x411, 0, 8}, {0x412, 0, 8}, {0x343, 0, 8}, {0x1D2, 0, 8},  // LKAS + ACC
+//                                  {0x200, 0, 6}};  // interceptor
+
+const CanMsg TOYOTA_TX_MSGS[] = {{0x180, 0, 5}};
 
 AddrCheckStruct toyota_addr_checks[] = {
   {.msg = {{ 0xB0, 1, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
@@ -239,11 +241,14 @@ static const addr_checks* toyota_init(uint16_t param) {
 static int toyota_fwd_hook(int bus_num, int addr) {
 
   int bus_fwd = -1;
-
+  //BUS 0 is vehicle side
+  //BUS 2 is DSU side
+  //forward all traffic from BUS 0 to BUS 2
   if (bus_num == 0) {
     bus_fwd = 2;
   }
 
+  //
   if (bus_num == 2) {
     // block stock lkas messages and stock acc messages (if OP is doing ACC)
     // in TSS2, 0x191 is LTA which we need to block to avoid controls collision
