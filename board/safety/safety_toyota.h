@@ -1,5 +1,5 @@
 const SteeringLimits TOYOTA_STEERING_LIMITS = {
-  .max_steer = 1150,
+  .max_steer = 1100,
   .max_rate_up = 10,          // ramp up slow
   .max_rate_down = 10,        // ramp down fast
   .max_torque_error = 350,    // max torque cmd in excess of motor torque
