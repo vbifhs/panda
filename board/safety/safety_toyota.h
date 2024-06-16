@@ -35,8 +35,8 @@ const int TOYOTA_GAS_INTERCEPTOR_THRSLD = 805;
 const CanMsg TOYOTA_TX_MSGS[] = {{0x180, 0, 5}};
 
 AddrCheckStruct toyota_addr_checks[] = {
-  {.msg = {{ 0xB0, 1, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
-  {.msg = {{ 0xB2, 1, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
+  {.msg = {{ 0xB0, 0, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
+  {.msg = {{ 0xB2, 0, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
   {.msg = {{0x260, 0, 8, .check_checksum = true, .expected_timestep = 20000U}, { 0 }, { 0 }}},
   {.msg = {{0x689, 1, 8, .check_checksum = false, .expected_timestep = 1000000U}, { 0 }, { 0 }}},
   {.msg = {{0x2C1, 1, 8, .check_checksum = false, .expected_timestep = 32000U}, { 0 }, { 0 }}},																																			 
@@ -103,6 +103,20 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
       uint8_t bit = (addr == 0x224) ? 5U : 37U;
       brake_pressed = GET_BIT(to_push, bit) != 0U;
     }
+
+    //Lexus_LS Wheel Speeds check
+    if (addr == 0xB0 || addr == 0xB2) {
+        bool standstill = (GET_BYTE(to_push, 0) == 0x00) && (GET_BYTE(to_push, 1) == 0x00) && (GET_BYTE(to_push, 2) == 0x00) && (GET_BYTE(to_push, 3) == 0x00);
+        vehicle_moving = !standstill;
+    }
+
+    if (!gas_interceptor_detected){
+      //Lexus_LS Gas Pedal
+      if(addr == 0x2C1){
+        gas_pressed = ( (GET_BYTE(to_push, 6) << 8) | (GET_BYTE(to_push, 7)) ) > 1000; //pedal is really sensitive
+      }
+    }
+
     generic_rx_checks((addr == 0x180));
   }
 
@@ -117,19 +131,6 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
       pcm_cruise_check(cruise_engaged);
     };
 
-        
-    if (!gas_interceptor_detected){
-      //Lexus_LS Gas Pedal
-      if(addr == 0x2C1){
-        gas_pressed = ( (GET_BYTE(to_push, 6) << 8) | (GET_BYTE(to_push, 7)) ) > 1000; //pedal is really sensitive
-      }
-    }
-
-    //Lexus_LS Wheel Speeds check
-    if (addr == 0xB0 || addr == 0xB2) {
-        bool standstill = (GET_BYTE(to_push, 0) == 0x00) && (GET_BYTE(to_push, 1) == 0x00) && (GET_BYTE(to_push, 2) == 0x00) && (GET_BYTE(to_push, 3) == 0x00);
-        vehicle_moving = !standstill;
-    }
     generic_rx_checks((addr == 0x180));
   }
 
