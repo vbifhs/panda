@@ -67,7 +67,7 @@ bool toyota_lta = false;
 int toyota_dbc_eps_torque_factor = 100;   // conversion factor for STEER_TORQUE_EPS in %: see dbc file
 
 bool toyota_steering_bus = false;
-bool toyota_drving_bus = false;  // Are we the second panda intercepting the driving bus?
+bool toyota_driving_bus = false;  // Are we the second panda intercepting the driving bus?
 
 static uint32_t toyota_compute_checksum(CANPacket_t *to_push) {
   int addr = GET_ADDR(to_push);
@@ -86,14 +86,14 @@ static uint32_t toyota_get_checksum(CANPacket_t *to_push) {
 
 static int toyota_rx_hook(CANPacket_t *to_push) {
 
-  bool valid = addr_safety_check(to_push, toyota_drving_bus ? (&ttoyota_drving_bus_rx_checks ) : (&toyota_steering_bus_rx_checks ),
+  bool valid = addr_safety_check(to_push, toyota_driving_bus ? (&ttoyota_drving_bus_rx_checks ) : (&toyota_steering_bus_rx_checks ),
                                  NULL, NULL, NULL, NULL);
 
 
   if (valid && (GET_BUS(to_push) == 0U)) {
     int addr = GET_ADDR(to_push);
 
-    if(!toyota_drving_bus)
+    if(!toyota_driving_bus)
     {
     // get eps motor torque (0.66 factor in dbc)
       if (addr == 0x260) {
@@ -256,7 +256,7 @@ static const addr_checks* toyota_init(uint16_t param) {
 #else
   toyota_lta = false;
 #endif
-  return &toyota_rx_checks;
+  return toyota_driving_bus ? (&toyota_drving_bus_rx_checks) : (&toyota_steering_bus_rx_checks);
 }
 
 static int toyota_fwd_hook(int bus_num, int addr) {
