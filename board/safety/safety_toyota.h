@@ -104,6 +104,14 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
       brake_pressed = GET_BIT(to_push, bit) != 0U;
     }
 
+    generic_rx_checks((addr == 0x180));
+  }
+
+
+
+  if (valid && (GET_BUS(to_push) == 1U)) {
+    int addr = GET_ADDR(to_push);
+
     //Lexus_LS Wheel Speeds check
     if (addr == 0xB0 || addr == 0xB2) {
         bool standstill = (GET_BYTE(to_push, 0) == 0x00) && (GET_BYTE(to_push, 1) == 0x00) && (GET_BYTE(to_push, 2) == 0x00) && (GET_BYTE(to_push, 3) == 0x00);
@@ -116,14 +124,6 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
         gas_pressed = ( (GET_BYTE(to_push, 6) << 8) | (GET_BYTE(to_push, 7)) ) > 1000; //pedal is really sensitive
       }
     }
-
-    generic_rx_checks((addr == 0x180));
-  }
-
-
-
-  if (valid && (GET_BUS(to_push) == 1U)) {
-    int addr = GET_ADDR(to_push);
     
     if (addr == 0x689) {
       // 17th bit is CRUISE_ACTIVE
