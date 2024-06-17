@@ -21,6 +21,9 @@ const LongitudinalLimits TOYOTA_LONG_LIMITS = {
   .min_accel = -3500,  // -3.5 m/s2
 };
 
+const int TOYOTA_FLAG_STEERING_BUS = 1;
+const int TOYOTA_FLAG_DRIVING_BUS = 2;
+
 // panda interceptor threshold needs to be equivalent to openpilot threshold to avoid controls mismatches
 // If thresholds are mismatched then it is possible for panda to see the gas fall and rise while openpilot is in the pre-enabled state
 // Threshold calculated from DBC gains: round((((15 + 75.555) / 0.159375) + ((15 + 151.111) / 0.159375)) / 2) = 805
@@ -34,16 +37,21 @@ const int TOYOTA_GAS_INTERCEPTOR_THRSLD = 805;
 
 const CanMsg TOYOTA_TX_MSGS[] = {{0x180, 0, 5}};
 
-AddrCheckStruct toyota_addr_checks[] = {
-  {.msg = {{ 0xB0, 1, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
-  {.msg = {{ 0xB2, 1, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
+AddrCheckStruct toyota_steering_bus_addr_checks[] = {
   {.msg = {{0x260, 0, 8, .check_checksum = true, .expected_timestep = 20000U}, { 0 }, { 0 }}},
   {.msg = {{0x689, 1, 8, .check_checksum = false, .expected_timestep = 1000000U}, { 0 }, { 0 }}},
-  {.msg = {{0x2C1, 1, 8, .check_checksum = false, .expected_timestep = 32000U}, { 0 }, { 0 }}},
   {.msg = {{0x224, 0, 8, .check_checksum = false, .expected_timestep = 25000U},
            {0x226, 0, 8, .check_checksum = false, .expected_timestep = 25000U}, { 0 }}},
 };
-addr_checks toyota_rx_checks = SET_ADDR_CHECKS(toyota_addr_checks);
+addr_checks toyota_steering_bus_rx_checks = SET_ADDR_CHECKS(toyota_steering_bus_addr_checks);
+
+AddrCheckStruct toyota_driving_bus_addr_checks[] = {
+  {.msg = {{ 0xB0, 0, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
+  {.msg = {{ 0xB2, 0, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
+  {.msg = {{0x689, 1, 8, .check_checksum = false, .expected_timestep = 1000000U}, { 0 }, { 0 }}},
+  {.msg = {{0x2C1, 0, 8, .check_checksum = false, .expected_timestep = 32000U}, { 0 }, { 0 }}},
+};
+addr_checks toyota_drving_bus_rx_checks = SET_ADDR_CHECKS(toyota_driving_bus_addr_checks);
 
 // safety param flags
 // first byte is for eps factor, second is for flags
@@ -57,6 +65,9 @@ bool toyota_alt_brake = false;
 bool toyota_stock_longitudinal = false;
 bool toyota_lta = false;
 int toyota_dbc_eps_torque_factor = 100;   // conversion factor for STEER_TORQUE_EPS in %: see dbc file
+
+bool toyota_steering_bus = false;
+bool toyota_drving_bus = false;  // Are we the second panda intercepting the driving bus?
 
 static uint32_t toyota_compute_checksum(CANPacket_t *to_push) {
   int addr = GET_ADDR(to_push);
@@ -75,33 +86,52 @@ static uint32_t toyota_get_checksum(CANPacket_t *to_push) {
 
 static int toyota_rx_hook(CANPacket_t *to_push) {
 
-  bool valid = addr_safety_check(to_push, &toyota_rx_checks,
-                                 toyota_get_checksum, toyota_compute_checksum, NULL, NULL);
+  bool valid = addr_safety_check(to_push, toyota_drving_bus ? (&ttoyota_drving_bus_rx_checks ) : (&toyota_steering_bus_rx_checks ),
+                                 NULL, NULL, NULL, NULL);
 
 
   if (valid && (GET_BUS(to_push) == 0U)) {
     int addr = GET_ADDR(to_push);
 
+    if(!toyota_drving_bus)
+    {
     // get eps motor torque (0.66 factor in dbc)
-    if (addr == 0x260) {
-      int torque_meas_new = (GET_BYTE(to_push, 5) << 8) | GET_BYTE(to_push, 6);
-      torque_meas_new = to_signed(torque_meas_new, 16);
+      if (addr == 0x260) {
+        int torque_meas_new = (GET_BYTE(to_push, 5) << 8) | GET_BYTE(to_push, 6);
+        torque_meas_new = to_signed(torque_meas_new, 16);
 
-      // scale by dbc_factor
-      torque_meas_new = (torque_meas_new * 1.8f); // 100;
+        // scale by dbc_factor
+        torque_meas_new = (torque_meas_new * 1.8f); // 100;
 
-      // update array of sample
-      update_sample(&torque_meas, torque_meas_new);
+        // update array of sample
+        update_sample(&torque_meas, torque_meas_new);
 
-      // increase torque_meas by 1 to be conservative on rounding
-      torque_meas.min--;
-      torque_meas.max++;
+        // increase torque_meas by 1 to be conservative on rounding
+        torque_meas.min--;
+        torque_meas.max++;
+      }
+
+      // most cars have brake_pressed on 0x226, corolla and rav4 on 0x224
+      if (((addr == 0x224) && toyota_alt_brake) || ((addr == 0x226) && !toyota_alt_brake)) {
+        uint8_t bit = (addr == 0x224) ? 5U : 37U;
+        brake_pressed = GET_BIT(to_push, bit) != 0U;
+      }
     }
 
-    // most cars have brake_pressed on 0x226, corolla and rav4 on 0x224
-    if (((addr == 0x224) && toyota_alt_brake) || ((addr == 0x226) && !toyota_alt_brake)) {
-      uint8_t bit = (addr == 0x224) ? 5U : 37U;
-      brake_pressed = GET_BIT(to_push, bit) != 0U;
+    if(toyota_steering_bus)
+    {
+      //Lexus_LS Wheel Speeds check
+      if (addr == 0xB0 || addr == 0xB2) {
+          bool standstill = (GET_BYTE(to_push, 0) == 0x00) && (GET_BYTE(to_push, 1) == 0x00) && (GET_BYTE(to_push, 2) == 0x00) && (GET_BYTE(to_push, 3) == 0x00);
+          vehicle_moving = !standstill;
+      }
+
+      if (!gas_interceptor_detected){
+        //Lexus_LS Gas Pedal
+        if(addr == 0x2C1){
+          gas_pressed = ( (GET_BYTE(to_push, 6) << 8) | (GET_BYTE(to_push, 7)) ) > 1000; //pedal is really sensitive
+        }
+      }
     }
 
     generic_rx_checks((addr == 0x180));
@@ -111,19 +141,6 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
 
   if (valid && (GET_BUS(to_push) == 1U)) {
     int addr = GET_ADDR(to_push);
-
-    //Lexus_LS Wheel Speeds check
-    if (addr == 0xB0 || addr == 0xB2) {
-        bool standstill = (GET_BYTE(to_push, 0) == 0x00) && (GET_BYTE(to_push, 1) == 0x00) && (GET_BYTE(to_push, 2) == 0x00) && (GET_BYTE(to_push, 3) == 0x00);
-        vehicle_moving = !standstill;
-    }
-
-    if (!gas_interceptor_detected){
-      //Lexus_LS Gas Pedal
-      if(addr == 0x2C1){
-        gas_pressed = ( (GET_BYTE(to_push, 6) << 8) | (GET_BYTE(to_push, 7)) ) > 1000; //pedal is really sensitive
-      }
-    }
     
     if (addr == 0x689) {
       // 17th bit is CRUISE_ACTIVE
@@ -230,6 +247,9 @@ static const addr_checks* toyota_init(uint16_t param) {
   toyota_alt_brake = GET_FLAG(param, TOYOTA_PARAM_ALT_BRAKE);
   toyota_stock_longitudinal = GET_FLAG(param, TOYOTA_PARAM_STOCK_LONGITUDINAL);
   toyota_dbc_eps_torque_factor = param & TOYOTA_EPS_FACTOR;
+
+  toyota_steering_bus = GET_FLAG(param, TOYOTA_FLAG_STEERING_BUS);
+  toyota_driving_bus = GET_FLAG(param, TOYOTA_FLAG_DRIVING_BUS);
 
 #ifdef ALLOW_DEBUG
   toyota_lta = GET_FLAG(param, TOYOTA_PARAM_LTA);
