@@ -51,7 +51,7 @@ AddrCheckStruct toyota_driving_bus_addr_checks[] = {
   {.msg = {{0x689, 1, 8, .check_checksum = false, .expected_timestep = 1000000U}, { 0 }, { 0 }}},
   {.msg = {{0x2C1, 0, 8, .check_checksum = false, .expected_timestep = 32000U}, { 0 }, { 0 }}},
 };
-addr_checks toyota_drving_bus_rx_checks = SET_ADDR_CHECKS(toyota_driving_bus_addr_checks);
+addr_checks toyota_driving_bus_rx_checks = SET_ADDR_CHECKS(toyota_driving_bus_addr_checks);
 
 // safety param flags
 // first byte is for eps factor, second is for flags
@@ -86,7 +86,7 @@ static uint32_t toyota_get_checksum(CANPacket_t *to_push) {
 
 static int toyota_rx_hook(CANPacket_t *to_push) {
 
-  bool valid = addr_safety_check(to_push, toyota_driving_bus ? (&ttoyota_drving_bus_rx_checks ) : (&toyota_steering_bus_rx_checks ),
+  bool valid = addr_safety_check(to_push, toyota_driving_bus ? (&toyota_driving_bus_rx_checks ) : (&toyota_steering_bus_rx_checks ),
                                  NULL, NULL, NULL, NULL);
 
 
@@ -256,7 +256,7 @@ static const addr_checks* toyota_init(uint16_t param) {
 #else
   toyota_lta = false;
 #endif
-  return toyota_driving_bus ? (&toyota_drving_bus_rx_checks) : (&toyota_steering_bus_rx_checks);
+  return toyota_driving_bus ? (&toyota_driving_bus_rx_checks) : (&toyota_steering_bus_rx_checks);
 }
 
 static int toyota_fwd_hook(int bus_num, int addr) {
