@@ -35,7 +35,7 @@ const int TOYOTA_GAS_INTERCEPTOR_THRSLD = 805;
 //                                  {0x2E4, 0, 5}, {0x191, 0, 8}, {0x411, 0, 8}, {0x412, 0, 8}, {0x343, 0, 8}, {0x1D2, 0, 8},  // LKAS + ACC
 //                                  {0x200, 0, 6}};  // interceptor
 
-const CanMsg TOYOTA_TX_MSGS[] = {{0x180, 0, 5}};
+const CanMsg TOYOTA_TX_MSGS[] = {{0x180, 0, 5}, {0x280, 0, 8}};
 
 AddrCheckStruct toyota_steering_bus_addr_checks[] = {
   {.msg = {{0x260, 0, 8, .check_checksum = true, .expected_timestep = 20000U}, { 0 }, { 0 }}},
@@ -177,8 +177,8 @@ static int toyota_tx_hook(CANPacket_t *to_send) {
     }
 
     // ACCEL: safety check on byte 1-2
-    if (addr == 0x343) {
-      int desired_accel = (GET_BYTE(to_send, 0) << 8) | GET_BYTE(to_send, 1);
+    if (addr == 0x280) {
+      int desired_accel = (GET_BYTE(to_send, 1) << 8) | GET_BYTE(to_send, 2);
       desired_accel = to_signed(desired_accel, 16);
 
       bool violation = false;
