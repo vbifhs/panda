@@ -35,7 +35,12 @@ const int TOYOTA_GAS_INTERCEPTOR_THRSLD = 805;
 //                                  {0x2E4, 0, 5}, {0x191, 0, 8}, {0x411, 0, 8}, {0x412, 0, 8}, {0x343, 0, 8}, {0x1D2, 0, 8},  // LKAS + ACC
 //                                  {0x200, 0, 6}};  // interceptor
 
-const CanMsg TOYOTA_TX_MSGS[] = {{0x180, 0, 5}, {0x280, 0, 8}};
+const CanMsg TOYOTA_STR_TX_MSGS[] = {{0x180, 0, 5}};  //STEERING COMMAND
+
+const CanMsg TOYOTA_DRV_TX_MSGS[] = {{0x280, 0, 8}};  // ACC_COMMAND
+
+#define TOYOTA_STR_TX_LEN (sizeof(TOYOTA_STR_TX_MSGS) / sizeof(TOYOTA_STR_TX_MSGS[0]))
+#define TOYOTA_DRV_TX_LEN (sizeof(TOYOTA_DRV_TX_MSGS) / sizeof(TOYOTA_DRV_TX_MSGS[0]))
 
 AddrCheckStruct toyota_steering_bus_addr_checks[] = {
   {.msg = {{0x260, 0, 8, .check_checksum = true, .expected_timestep = 20000U}, { 0 }, { 0 }}},
@@ -162,20 +167,13 @@ static int toyota_tx_hook(CANPacket_t *to_send) {
   int addr = GET_ADDR(to_send);
   int bus = GET_BUS(to_send);
 
-  if (!msg_allowed(to_send, TOYOTA_TX_MSGS, sizeof(TOYOTA_TX_MSGS)/sizeof(TOYOTA_TX_MSGS[0]))) {
+  if (!msg_allowed(to_send, toyota_driving_bus ? (TOYOTA_DRV_TX_MSG ) : (TOYOTA_STR_TX_MSG ),
+                            toyota_driving_bus ? (TOYOTA_DRV_TX_LEN) : (TOYOTA_STR_TX_LEN)) {
     tx = 0;
   }
 
-  // Check if msg is sent on BUS 0
-  if (bus == 0) {
-
-    // GAS PEDAL: safety check
-    if (addr == 0x200) {
-      if (longitudinal_interceptor_checks(to_send)) {
-        tx = 0;
-      }
-    }
-
+  if(toyota_driving_bus)
+  {
     // ACCEL: safety check on byte 1-2
     if (addr == 0x280) {
       int desired_accel = (GET_BYTE(to_send, 1) << 8) | GET_BYTE(to_send, 2);
@@ -185,46 +183,24 @@ static int toyota_tx_hook(CANPacket_t *to_send) {
       violation |= longitudinal_accel_checks(desired_accel, TOYOTA_LONG_LIMITS);
 
       // only ACC messages that cancel are allowed when openpilot is not controlling longitudinal
-      if (toyota_stock_longitudinal) {
-        bool cancel_req = GET_BIT(to_send, 24U) != 0U;
-        if (!cancel_req) {
-          violation = true;
-        }
-        if (desired_accel != TOYOTA_LONG_LIMITS.inactive_accel) {
-          violation = true;
-        }
-      }
+      // if (toyota_stock_longitudinal) {
+      //   bool cancel_req = GET_BIT(to_send, 24U) != 0U;
+      //   if (!cancel_req) {
+      //     violation = true;
+      //   }
+      //   if (desired_accel != TOYOTA_LONG_LIMITS.inactive_accel) {
+      //     violation = true;
+      //   }
+      // }
 
       if (violation) {
         tx = 0;
       }
     }
+  }
 
-    // AEB: block all actuation. only used when DSU is unplugged
-    if (addr == 0x283) {
-      // only allow the checksum, which is the last byte
-      bool block = (GET_BYTES(to_send, 0, 4) != 0U) || (GET_BYTE(to_send, 4) != 0U) || (GET_BYTE(to_send, 5) != 0U);
-      if (block) {
-        tx = 0;
-      }
-    }
-
-    // LTA steering check
-    // only sent to prevent dash errors, no actuation is accepted
-    if (addr == 0x191) {
-      // check the STEER_REQUEST, STEER_REQUEST_2, SETME_X64 STEER_ANGLE_CMD signals
-      bool lta_request = GET_BIT(to_send, 0U) != 0U;
-      bool lta_request2 = GET_BIT(to_send, 25U) != 0U;
-      int setme_x64 = GET_BYTE(to_send, 5);
-      int lta_angle = (GET_BYTE(to_send, 1) << 8) | GET_BYTE(to_send, 2);
-      lta_angle = to_signed(lta_angle, 16);
-
-      // block LTA msgs with actuation requests
-      if (lta_request || lta_request2 || (lta_angle != 0) || (setme_x64 != 0)) {
-        tx = 0;
-      }
-    }
-
+  if(!toyota_driving_bus)
+  {
     // STEER: safety check on bytes 2-3
     if (addr == 0x180) {
       int desired_torque = (GET_BYTE(to_send, 1) << 8) | GET_BYTE(to_send, 2);
@@ -239,6 +215,82 @@ static int toyota_tx_hook(CANPacket_t *to_send) {
       }
     }
   }
+
+
+  // Check if msg is sent on BUS 0
+  // if (bus == 0) 
+  // {
+
+  //   // GAS PEDAL: safety check
+  //   if (addr == 0x200) {
+  //     if (longitudinal_interceptor_checks(to_send)) {
+  //       tx = 0;
+  //     }
+  //   }
+
+  //   // ACCEL: safety check on byte 1-2
+  //   if (addr == 0x280) {
+  //     int desired_accel = (GET_BYTE(to_send, 1) << 8) | GET_BYTE(to_send, 2);
+  //     desired_accel = to_signed(desired_accel, 16);
+
+  //     bool violation = false;
+  //     violation |= longitudinal_accel_checks(desired_accel, TOYOTA_LONG_LIMITS);
+
+  //     // only ACC messages that cancel are allowed when openpilot is not controlling longitudinal
+  //     if (toyota_stock_longitudinal) {
+  //       bool cancel_req = GET_BIT(to_send, 24U) != 0U;
+  //       if (!cancel_req) {
+  //         violation = true;
+  //       }
+  //       if (desired_accel != TOYOTA_LONG_LIMITS.inactive_accel) {
+  //         violation = true;
+  //       }
+  //     }
+
+  //     if (violation) {
+  //       tx = 0;
+  //     }
+  //   }
+
+  //   // AEB: block all actuation. only used when DSU is unplugged
+  //   if (addr == 0x283) {
+  //     // only allow the checksum, which is the last byte
+  //     bool block = (GET_BYTES(to_send, 0, 4) != 0U) || (GET_BYTE(to_send, 4) != 0U) || (GET_BYTE(to_send, 5) != 0U);
+  //     if (block) {
+  //       tx = 0;
+  //     }
+  //   }
+
+  //   // LTA steering check
+  //   // only sent to prevent dash errors, no actuation is accepted
+  //   if (addr == 0x191) {
+  //     // check the STEER_REQUEST, STEER_REQUEST_2, SETME_X64 STEER_ANGLE_CMD signals
+  //     bool lta_request = GET_BIT(to_send, 0U) != 0U;
+  //     bool lta_request2 = GET_BIT(to_send, 25U) != 0U;
+  //     int setme_x64 = GET_BYTE(to_send, 5);
+  //     int lta_angle = (GET_BYTE(to_send, 1) << 8) | GET_BYTE(to_send, 2);
+  //     lta_angle = to_signed(lta_angle, 16);
+
+  //     // block LTA msgs with actuation requests
+  //     if (lta_request || lta_request2 || (lta_angle != 0) || (setme_x64 != 0)) {
+  //       tx = 0;
+  //     }
+  //   }
+
+  //   // STEER: safety check on bytes 2-3
+  //   if (addr == 0x180) {
+  //     int desired_torque = (GET_BYTE(to_send, 1) << 8) | GET_BYTE(to_send, 2);
+  //     desired_torque = to_signed(desired_torque, 16);
+  //     bool steer_req = GET_BIT(to_send, 0U) != 0U;
+  //     if (steer_torque_cmd_checks(desired_torque, steer_req, TOYOTA_STEERING_LIMITS)) {
+  //       tx = 0;
+  //     }
+  //     // When using LTA (angle control), assert no actuation on LKA message
+  //     if (toyota_lta && ((desired_torque != 0) || steer_req)) {
+  //       tx = 0;
+  //     }
+  //   }
+  // }
 
   return tx;
 }
