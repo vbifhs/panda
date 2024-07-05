@@ -167,7 +167,7 @@ static int toyota_tx_hook(CANPacket_t *to_send) {
   int addr = GET_ADDR(to_send);
   //int bus = GET_BUS(to_send);
 
-  if (!msg_allowed(to_send, toyota_driving_bus ? (TOYOTA_DRV_TX_MSG) : (TOYOTA_STR_TX_MSG ), toyota_driving_bus ? (TOYOTA_DRV_TX_LEN) : (TOYOTA_STR_TX_LEN) ) )
+  if (!msg_allowed(to_send, toyota_driving_bus ? (TOYOTA_DRV_TX_MSGS) : (TOYOTA_STR_TX_MSGS), toyota_driving_bus ? (TOYOTA_DRV_TX_LEN) : (TOYOTA_STR_TX_LEN) ) )
   {
     tx = 0;
   }
