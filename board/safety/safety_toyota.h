@@ -37,7 +37,7 @@ const int TOYOTA_GAS_INTERCEPTOR_THRSLD = 805;
 
 const CanMsg TOYOTA_STR_TX_MSGS[] = {{0x180, 0, 5}};  //STEERING COMMAND
 
-const CanMsg TOYOTA_DRV_TX_MSGS[] = {{0x280, 0, 8}};  // ACC_COMMAND
+const CanMsg TOYOTA_DRV_TX_MSGS[] = {{0x343, 0, 8}};  // ACC_COMMAND
 
 #define TOYOTA_STR_TX_LEN (sizeof(TOYOTA_STR_TX_MSGS) / sizeof(TOYOTA_STR_TX_MSGS[0]))
 #define TOYOTA_DRV_TX_LEN (sizeof(TOYOTA_DRV_TX_MSGS) / sizeof(TOYOTA_DRV_TX_MSGS[0]))
@@ -175,23 +175,23 @@ static int toyota_tx_hook(CANPacket_t *to_send) {
   if(toyota_driving_bus)
   {
     // ACCEL: safety check on byte 1-2
-    if (addr == 0x280) {
-      int desired_accel = (GET_BYTE(to_send, 1) << 8) | GET_BYTE(to_send, 2);
+    if (addr == 0x343) {
+      int desired_accel = (GET_BYTE(to_send, 0) << 8) | GET_BYTE(to_send, 1);
       desired_accel = to_signed(desired_accel, 16);
 
       bool violation = false;
       violation |= longitudinal_accel_checks(desired_accel, TOYOTA_LONG_LIMITS);
 
       // only ACC messages that cancel are allowed when openpilot is not controlling longitudinal
-      // if (toyota_stock_longitudinal) {
-      //   bool cancel_req = GET_BIT(to_send, 24U) != 0U;
-      //   if (!cancel_req) {
-      //     violation = true;
-      //   }
-      //   if (desired_accel != TOYOTA_LONG_LIMITS.inactive_accel) {
-      //     violation = true;
-      //   }
-      // }
+      if (toyota_stock_longitudinal) {
+        bool cancel_req = GET_BIT(to_send, 24U) != 0U;
+        if (!cancel_req) {
+          violation = true;
+        }
+        if (desired_accel != TOYOTA_LONG_LIMITS.inactive_accel) {
+          violation = true;
+        }
+      }
 
       if (violation) {
         tx = 0;
