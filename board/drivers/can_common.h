@@ -186,7 +186,7 @@ void can_init_all(void) {
       bus_config[i].can_data_speed = 0U;
     }
     //If 1st panda (internal panda) and Body BUS bus, then set to 250kbps
-    if((memcmp(current_board->board_type, hex_values, 0x04) == 0) && (bus_config[1].bus_lookup == 1U) ) {
+    if((memcmp(current_board->board_type, hex_values, 0x04) == 0) && (bus_config[i].bus_lookup == 1U) ) {
       bus_config[i].can_speed = 2500U;
     }
 
