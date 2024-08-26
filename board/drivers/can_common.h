@@ -180,12 +180,14 @@ bus_config_t bus_config[] = {
 
 void can_init_all(void) {
   bool ret = true;
+  size_t len1 = strlen(current_board->board_type);
+  char *intBoard = "Tres"
   for (uint8_t i=0U; i < PANDA_CAN_CNT; i++) {
     if (!current_board->has_canfd) {
       bus_config[i].can_data_speed = 0U;
     }
     //If 1st panda (internal panda) and Body BUS bus, then set to 250kbps
-    if((current_board->board_type == "Tres") && (bus_config[i].bus_lookup == 1U) ) {
+    if((len1 == 0x04) && (memcmp(current_board->board_type, intBoard, len1) == 0) && (bus_config[1].bus_lookup == 1U) ) {
       bus_config[i].can_speed = 2500U;
     }
 
