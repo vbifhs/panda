@@ -152,7 +152,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
       bool cruise_engaged = GET_BIT(to_push, 17U) != 0U;
       pcm_cruise_check(cruise_engaged);
     };
-    else if(addr == 0x280) {
+    if(addr == 0x280) {
       // For 2nd External Panda
       // 34th bit is ACCEL_ENABLE and follows CRUISE ACTIVE bit
       bool cruise_engaged = GET_BIT(to_push, 34U) != 0U;
