@@ -146,18 +146,19 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
 
   if (valid && (GET_BUS(to_push) == 1U || GET_BUS(to_push) == 2U) ) {
     int addr = GET_ADDR(to_push);
+    int bus = GET_BUS(to_push);
     
-    if (addr == 0x689) {
+    if (addr == 0x689 && bus == 1U) {
       // 17th bit is CRUISE_ACTIVE
       bool cruise_engaged = GET_BIT(to_push, 17U) != 0U;
       pcm_cruise_check(cruise_engaged);
-    };
-    if(addr == 0x280) {
+    }
+    else if (addr == 0x280 && bus == 2U) {
       // For 2nd External Panda
       // 34th bit is ACCEL_ENABLE and follows CRUISE ACTIVE bit
       bool cruise_engaged = GET_BIT(to_push, 34U) != 0U;
       pcm_cruise_check(cruise_engaged);
-    };
+    }
 
     generic_rx_checks((addr == 0x180));
   }
