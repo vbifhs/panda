@@ -146,7 +146,6 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
 
   if (valid && (GET_BUS(to_push) == 1U)) {
     int addr = GET_ADDR(to_push);
-    int bus = GET_BUS(to_push);
     
     if (addr == 0x689) {
       // 17th bit is CRUISE_ACTIVE
