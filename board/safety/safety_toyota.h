@@ -296,7 +296,7 @@ static int toyota_tx_hook(CANPacket_t *to_send) {
 
 static const addr_checks* toyota_init(uint16_t param) {
   toyota_alt_brake = GET_FLAG(param, TOYOTA_PARAM_ALT_BRAKE);
-  toyota_stock_longitudinal = GET_FLAG(param, TOYOTA_PARAM_STOCK_LONGITUDINAL);
+  toyota_stock_longitudinal = 0; //GET_FLAG(param, TOYOTA_PARAM_STOCK_LONGITUDINAL);
   toyota_dbc_eps_torque_factor = param & TOYOTA_EPS_FACTOR;
 
   toyota_steering_bus = GET_FLAG(param, TOYOTA_FLAG_STEERING_BUS);
@@ -326,7 +326,7 @@ static int toyota_fwd_hook(int bus_num, int addr) {
     // in TSS2, 0x191 is LTA which we need to block to avoid controls collision
     int is_lkas_msg = ((addr == 0x180) || (addr == 0x412) || (addr == 0x191));
     // in TSS2 the camera does ACC as well, so filter 0x343
-    int is_acc_msg = (addr == 0x343);
+    int is_acc_msg = (addr == 0x280);
     int block_msg = is_lkas_msg || (is_acc_msg && !toyota_stock_longitudinal);
     if (!block_msg) {
       bus_fwd = 0;
