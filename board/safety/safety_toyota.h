@@ -296,7 +296,7 @@ static int toyota_tx_hook(CANPacket_t *to_send) {
 
 static const addr_checks* toyota_init(uint16_t param) {
   toyota_alt_brake = GET_FLAG(param, TOYOTA_PARAM_ALT_BRAKE);
-  toyota_stock_longitudinal = 0; //GET_FLAG(param, TOYOTA_PARAM_STOCK_LONGITUDINAL);
+  toyota_stock_longitudinal = GET_FLAG(param, TOYOTA_PARAM_STOCK_LONGITUDINAL);
   toyota_dbc_eps_torque_factor = param & TOYOTA_EPS_FACTOR;
 
   toyota_steering_bus = GET_FLAG(param, TOYOTA_FLAG_STEERING_BUS);
@@ -316,6 +316,7 @@ static int toyota_fwd_hook(int bus_num, int addr) {
   //BUS 0 is vehicle side
   //BUS 2 is DSU side
   //forward all traffic from BUS 0 to BUS 2
+  //But for msgs from BUS 2 (DSU), only forward to BUS 0 based on logic below.
   if (bus_num == 0) {
     bus_fwd = 2;
   }
