@@ -53,7 +53,7 @@ addr_checks toyota_steering_bus_rx_checks = SET_ADDR_CHECKS(toyota_steering_bus_
 AddrCheckStruct toyota_driving_bus_addr_checks[] = {
   {.msg = {{ 0xB0, 0, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
   {.msg = {{ 0xB2, 0, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
-  {.msg = {{0x689, 1, 8, .check_checksum = false, .expected_timestep = 1000000U}, { 0 }, { 0 }}},
+  {.msg = {{0x280, 2, 8, .check_checksum = false, .expected_timestep = 320000U}, { 0 }, { 0 }}},
   {.msg = {{0x2C1, 0, 8, .check_checksum = false, .expected_timestep = 32000U}, { 0 }, { 0 }}},
 };
 addr_checks toyota_driving_bus_rx_checks = SET_ADDR_CHECKS(toyota_driving_bus_addr_checks);
@@ -154,7 +154,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
     }
     generic_rx_checks((addr == 0x180));
   }
-  else if(valid && (GET_BUS(to_push) == 2U) && toyota_driving_bus) {
+  else if(valid && (GET_BUS(to_push) == 2U) ) {
     int addr = GET_ADDR(to_push);
     
     if (addr == 0x280) {
