@@ -154,7 +154,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
     }
     generic_rx_checks((addr == 0x180));
   }
-  else if(valid && (GET_BUS(to_push) == 2U) ) {
+  else if(valid && (GET_BUS(to_push) == 2U) && toyota_driving_bus) {
     int addr = GET_ADDR(to_push);
     
     if (addr == 0x280) {
