@@ -154,7 +154,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
   //   }
   //   generic_rx_checks((addr == 0x180));
   // }
-  if(valid && (addr == (toyota_drving_bus ? 0x280 : 0x689)) )  {
+  if(valid && (addr == (toyota_driving_bus ? 0x280 : 0x689)) )  {
     if(addr == 0x689){
       bool cruise_engaged = GET_BIT(to_push, 17U) != 0U;
       pcm_cruise_check(cruise_engaged);}
