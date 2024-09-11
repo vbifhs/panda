@@ -154,6 +154,16 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
     }
     generic_rx_checks((addr == 0x180));
   }
+  else if(valid && (GET_BUS(to_push) == 2U)) {
+    int addr = GET_ADDR(to_push);
+    
+    if (addr == 0x280) {
+      // 34th bit is ACCEL_ENABLE BIT which correlates with CRUISE_ACTIVE bit in msg 0x689
+      bool cruise_engaged = GET_BIT(to_push, 34U) != 0U;
+      pcm_cruise_check(cruise_engaged);
+    }
+    generic_rx_checks((addr == 0x180));
+  }
 
   
 
