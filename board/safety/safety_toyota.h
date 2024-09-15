@@ -37,7 +37,7 @@ const int TOYOTA_GAS_INTERCEPTOR_THRSLD = 805;
 
 const CanMsg TOYOTA_STR_TX_MSGS[] = {{0x180, 0, 5}};  //STEERING COMMAND
 
-const CanMsg TOYOTA_DRV_TX_MSGS[] = {{0x280, 0, 8}, {0x790, 0, 8} };  // ACC_COMMAND and DSU_DIAG_REQ_MSG
+const CanMsg TOYOTA_DRV_TX_MSGS[] = {{0x280, 0, 8}, {0x790, 2, 8} };  // ACC_COMMAND
 
 #define TOYOTA_STR_TX_LEN (sizeof(TOYOTA_STR_TX_MSGS) / sizeof(TOYOTA_STR_TX_MSGS[0]))
 #define TOYOTA_DRV_TX_LEN (sizeof(TOYOTA_DRV_TX_MSGS) / sizeof(TOYOTA_DRV_TX_MSGS[0]))
