@@ -181,7 +181,6 @@ bus_config_t bus_config[] = {
 void can_init_all(void) {
   bool ret = true;
   const unsigned char hex_values[] = {0x54, 0x72, 0x65, 0x73};
-  bool first_panda_can_set = false;
   for (uint8_t i=0U; i < PANDA_CAN_CNT; i++) {
     if (!current_board->has_canfd) {
       bus_config[i].can_data_speed = 0U;
