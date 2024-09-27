@@ -182,9 +182,12 @@ void can_init_all(void) {
   bool ret = true;
   //const unsigned char hex_values[] = {0x54, 0x72, 0x65, 0x73}; // "Tres"
   const unsigned char hex_values[] = {0x42, 0x6C, 0x61, 0x63, 0x6B};// "Black"
-  const uint32_t id0 = 0x28001B00;
-  const uint32_t id1 = 0x17513234;
-  const uint32_t id2 = 0x30373133;
+  // const uint32_t id0 = 0x28001B00;
+  // const uint32_t id1 = 0x17513234;
+  // const uint32_t id2 = 0x30373133;
+  const uint32_t id0 = 0x34000D00;
+  const uint32_t id1 = 0x0B503054;
+  const uint32_t id2 = 0x38343920;
   uint32_t uid0;
   uint32_t uid1;
   uint32_t uid2;
