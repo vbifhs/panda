@@ -1,3 +1,5 @@
+#include <stdio.h> 
+
 typedef struct {
   volatile uint32_t w_ptr;
   volatile uint32_t r_ptr;
