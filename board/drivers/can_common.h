@@ -180,13 +180,25 @@ bus_config_t bus_config[] = {
 
 void can_init_all(void) {
   bool ret = true;
-  const unsigned char hex_values[] = {0x54, 0x72, 0x65, 0x73};
+  const uint32_t id0 = 0x28001B00;
+  const uint32_t id1 = 0x17513234;
+  const uint32_t id2 = 0x30373133;
+  uint32_t uid0;
+  uint32_t uid1;
+  uint32_t uid2;
+
+  
   for (uint8_t i=0U; i < PANDA_CAN_CNT; i++) {
     if (!current_board->has_canfd) {
       bus_config[i].can_data_speed = 0U;
     }
-    //If 1st panda (C3X internal panda) and Body BUS bus (CAN0 and CAN2), then set to 250kbps
-    if( (memcmp(current_board->board_type, hex_values, 0x04) == 0) && ((bus_config[i].bus_lookup == 0U) || (bus_config[i].bus_lookup == 2U)) ) {
+    //If 3rd panda (2nd External panda), For CAN0 and CAN2 set to 250kbps for Body BUS communication
+    uid0 = *(uint32_t*)(0x1FFF7A10);  // UID[0]
+    uid1 = *(uint32_t*)(0x1FFF7A14);  // UID[1]
+    uid2 = *(uint32_t*)(0x1FFF7A18);  // UID[2]
+    if( (memcmp(&uid0, &id0, sizeof(uint32_t)) == 0) && (memcmp(&uid1, &id1, sizeof(uint32_t)) == 0) && (memcmp(&uid2, &id2, sizeof(uint32_t)) == 0) && \
+        ((bus_config[i].bus_lookup == 0U) || (bus_config[i].bus_lookup == 2U))  )
+    {
       bus_config[i].can_speed = 2500U;
     }
 
