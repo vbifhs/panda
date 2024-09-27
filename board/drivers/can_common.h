@@ -189,8 +189,8 @@ void can_init_all(void) {
   //const uint32_t id1 = 0x0B503054;
   //const uint32_t id2 = 0x38343920;
   uint32_t uid0;
-  uint32_t uid1;
-  uint32_t uid2;
+  // uint32_t uid1;
+  // uint32_t uid2;
 
   
   for (uint8_t i=0U; i < PANDA_CAN_CNT; i++) {
