@@ -198,7 +198,7 @@ void can_init_all(void) {
     //If 3rd panda (2nd External panda), For CAN0 and CAN2 set to 250kbps for Body BUS communication
     //Make sure the current board is the "Black" panda and not the internal Panda in the C3X
     //The addresses where the unique ID is stored is different for the STM32F7 (Tres Panda) than the STM32F4 (Black Panda)
-    if((memcmp(current_board->board_type, hex_values, 0x05) == 0)
+    if(memcmp(current_board->board_type, hex_values, 0x05) == 0)
     {
       uid0 = *(uint32_t*)(0x1FFF7A10);  // UID[0]
       uid1 = *(uint32_t*)(0x1FFF7A14);  // UID[1]
