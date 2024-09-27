@@ -204,6 +204,7 @@ void can_init_all(void) {
     if(memcmp(current_board->board_type, hex_values, 0x05) == 0)
     {
       uid0 = *(uint32_t*)(0x1FFF7A10);  // UID[0]
+      printf("The value of the 32-bit unsigned variable is: %u\n", uid0);
       //uid1 = *(uint32_t*)(0x1FFF7A14);  // UID[1]
       //uid2 = *(uint32_t*)(0x1FFF7A18);  // UID[2]
     
