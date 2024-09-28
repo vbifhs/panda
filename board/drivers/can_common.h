@@ -203,7 +203,7 @@ void can_init_all(void) {
     //The addresses where the unique ID is stored is different for the STM32F7 (Tres Panda) than the STM32F4 (Black Panda)
     if(memcmp(current_board->board_type, hex_values, 0x05) == 0)
     {
-      uid0 = *(uint32_t*)(0x1FFF7A10);  // UID[0]
+      uid0 = (*((volatile uint32_t*)(0x1FFF7A10)));  // UID[0]
       //uid1 = *(uint32_t*)(0x1FFF7A14);  // UID[1]
       //uid2 = *(uint32_t*)(0x1FFF7A18);  // UID[2]
     
