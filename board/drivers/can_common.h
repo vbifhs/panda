@@ -210,7 +210,7 @@ void can_init_all(void) {
       //uid1 = *(uint32_t*)(0x1FFF7A14);  // UID[1]
       //uid2 = *(uint32_t*)(0x1FFF7A18);  // UID[2]
     
-      if( (memcmp(&uid0, &id0, sizeof(uint32_t)) == 0) && ((bus_config[i].bus_lookup == 0U) || (bus_config[i].bus_lookup == 2U))  )
+      if( (uid0 == id0) && ((bus_config[i].bus_lookup == 0U) || (bus_config[i].bus_lookup == 2U))  )
       {
         bus_config[i].can_speed = 2500U;
       }
