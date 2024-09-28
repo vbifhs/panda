@@ -187,8 +187,8 @@ void can_init_all(void) {
   //const uint32_t id0 = 0x28001B00;
   // const uint32_t id1 = 0x17513234;
   // const uint32_t id2 = 0x30373133;
-  //const uint32_t id0 = 0x34000D00;
-  const uint32_t id0 = 0x00D00034;
+  const uint32_t id0 = 0x34000D00;
+  //const uint32_t id0 = 0x00D00034;
   //const uint32_t id1 = 0x0B503054;
   //const uint32_t id2 = 0x38343920;
   uint32_t uid0;
