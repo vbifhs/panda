@@ -190,8 +190,8 @@ void can_init_all(void) {
     //If 1st panda (internal panda) and Body BUS bus, then set to 250kbps
     if((memcmp(current_board->board_type, hex_values, 0x04) == 0))
     {
-      uid0 = (*((volatile uint32_t*)(0x1FFF7590)));  // UID[0]
-      if((uid0 ==id0) && (bus_config[i].bus_lookup == 1U) ) 
+      uid0 = 0x35003000; //(*((volatile uint32_t*)(0x1FFF7590)));  // UID[0]
+      if((uid0 == id0) && (bus_config[i].bus_lookup == 1U) ) 
       {
       bus_config[i].can_speed = 2500U;
       }
