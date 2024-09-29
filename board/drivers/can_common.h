@@ -181,13 +181,20 @@ bus_config_t bus_config[] = {
 void can_init_all(void) {
   bool ret = true;
   const unsigned char hex_values[] = {0x54, 0x72, 0x65, 0x73};
+  const uint32_t id0 = 0x35003000;
+	uint32_t uid0;
   for (uint8_t i=0U; i < PANDA_CAN_CNT; i++) {
     if (!current_board->has_canfd) {
       bus_config[i].can_data_speed = 0U;
     }
     //If 1st panda (internal panda) and Body BUS bus, then set to 250kbps
-    if((memcmp(current_board->board_type, hex_values, 0x04) == 0) && (bus_config[i].bus_lookup == 1U) ) {
+    if((memcmp(current_board->board_type, hex_values, 0x04) == 0))
+    {
+      uid0 = (*((volatile uint32_t*)(0x1FFF7590)));  // UID[0]
+      if((uid0 ==id0) && (bus_config[i].bus_lookup == 1U) ) 
+      {
       bus_config[i].can_speed = 2500U;
+      }
     }
     can_clear(can_queues[i]);
     ret &= can_init(i);
