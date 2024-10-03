@@ -45,7 +45,7 @@ const CanMsg TOYOTA_DRV_TX_MSGS[] = {{0x280, 0, 8}, {0x790, 2, 8}, {0x689, 0, 8}
 
 AddrCheckStruct toyota_steering_bus_addr_checks[] = {
   {.msg = {{0x260, 0, 8, .check_checksum = true, .expected_timestep = 20000U}, { 0 }, { 0 }}},
-  {.msg = {{0x689, 0, 8, .check_checksum = false, .expected_timestep = 1000000U}, { 0 }, { 0 }}},
+  {.msg = {{0x689, 2, 8, .check_checksum = false, .expected_timestep = 1000000U}, { 0 }, { 0 }}},
   {.msg = {{0x224, 0, 8, .check_checksum = false, .expected_timestep = 25000U},
            {0x226, 0, 8, .check_checksum = false, .expected_timestep = 25000U}, { 0 }}},
 };
@@ -55,7 +55,6 @@ AddrCheckStruct toyota_driving_bus_addr_checks[] = {
   {.msg = {{ 0xB0, 0, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
   {.msg = {{ 0xB2, 0, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
   {.msg = {{0x280, 2, 8, .check_checksum = false, .expected_timestep = 320000U}, { 0 }, { 0 }}},
-  {.msg = {{0x689, 0, 8, .check_checksum = false, .expected_timestep = 1000000U}, { 0 }, { 0 }}},
   {.msg = {{0x2C1, 0, 8, .check_checksum = false, .expected_timestep = 32000U}, { 0 }, { 0 }}},
 };
 addr_checks toyota_driving_bus_rx_checks = SET_ADDR_CHECKS(toyota_driving_bus_addr_checks);
