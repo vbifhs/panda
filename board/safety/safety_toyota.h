@@ -35,10 +35,10 @@ const int TOYOTA_GAS_INTERCEPTOR_THRSLD = 805;
 //                                  {0x2E4, 0, 5}, {0x191, 0, 8}, {0x411, 0, 8}, {0x412, 0, 8}, {0x343, 0, 8}, {0x1D2, 0, 8},  // LKAS + ACC
 //                                  {0x200, 0, 6}};  // interceptor
 
-const CanMsg TOYOTA_STR_TX_MSGS[] = {{0x180, 0, 5}};  //STEERING COMMAND
+const CanMsg TOYOTA_STR_TX_MSGS[] = {{0x180, 0, 5}, {0x689, 0, 8}};  //STEERING COMMAND
 
 // DSU_DIAG_REQ_MSG would not get sent out until the CAN BUS was changed to CAN 2
-const CanMsg TOYOTA_DRV_TX_MSGS[] = {{0x280, 0, 8}, {0x790, 2, 8}, {0x689, 0, 8}, };  // ACC_COMMAND
+const CanMsg TOYOTA_DRV_TX_MSGS[] = {{0x280, 0, 8}, {0x790, 2, 8}, {0x689, 0, 8} };  // ACC_COMMAND
 
 #define TOYOTA_STR_TX_LEN (sizeof(TOYOTA_STR_TX_MSGS) / sizeof(TOYOTA_STR_TX_MSGS[0]))
 #define TOYOTA_DRV_TX_LEN (sizeof(TOYOTA_DRV_TX_MSGS) / sizeof(TOYOTA_DRV_TX_MSGS[0]))
