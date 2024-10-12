@@ -177,9 +177,10 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
   {
     bool cruise_engaged = GET_BIT(to_push, 17U) != 0U;
     pcm_cruise_check(cruise_engaged);
+    generic_rx_checks(true); //addr == 0x180
   }
 
-  generic_rx_checks((addr == 0x180));
+  
   return valid;
 }
 
