@@ -58,7 +58,7 @@ addr_checks toyota_steering_bus_rx_checks = SET_ADDR_CHECKS(toyota_steering_bus_
 AddrCheckStruct toyota_driving_bus_addr_checks[] = {
   {.msg = {{ 0xB0, 0, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
   {.msg = {{ 0xB2, 0, 8, .check_checksum = false, .expected_timestep = 12000U}, { 0 }, { 0 }}},
-  {.msg = {{0x689, 1, 8, .check_checksum = false, .expected_timestep = 1000000U}, { 0 }, { 0 }}},
+  //{.msg = {{0x689, 1, 8, .check_checksum = false, .expected_timestep = 1000000U}, { 0 }, { 0 }}},
   {.msg = {{0x2C1, 0, 8, .check_checksum = false, .expected_timestep = 32000U}, { 0 }, { 0 }}},
 };
 addr_checks toyota_driving_bus_rx_checks = SET_ADDR_CHECKS(toyota_driving_bus_addr_checks);
@@ -107,8 +107,8 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
     valid = addr_safety_check(to_push, &toyota_steering_bus_rx_checks, toyota_get_checksum, toyota_compute_checksum, NULL, NULL);}
   else if (toyota_driving_bus){
     valid = addr_safety_check(to_push, &toyota_driving_bus_rx_checks, toyota_get_checksum, toyota_compute_checksum, NULL, NULL);}
-  else if (toyota_body_bus){
-    valid = addr_safety_check(to_push, &toyota_body_bus_rx_checks, toyota_get_checksum, toyota_compute_checksum, NULL, NULL);}
+  // else if (toyota_body_bus){
+  //   valid = addr_safety_check(to_push, &toyota_body_bus_rx_checks, toyota_get_checksum, toyota_compute_checksum, NULL, NULL);}
 
   // bool valid = addr_safety_check(to_push, toyota_driving_bus ? (&toyota_driving_bus_rx_checks ) : (&toyota_steering_bus_rx_checks ),
   //                                toyota_get_checksum, toyota_compute_checksum, NULL, NULL);
@@ -161,24 +161,24 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
 
 
 
-  // if (valid && (GET_BUS(to_push) == 1U)) {
-  //   int addr = GET_ADDR(to_push);
+  if (valid && (GET_BUS(to_push) == 1U)) {
+    int addr = GET_ADDR(to_push);
     
-  //   if (addr == 0x689) {
-  //     // 17th bit is CRUISE_ACTIVE
-  //     bool cruise_engaged = GET_BIT(to_push, 17U) != 0U;
-  //     pcm_cruise_check(cruise_engaged);
-  //   }
-  //   generic_rx_checks((addr == 0x180));
-  // }
-
-
-  if(valid && (GET_ADDR(to_push) == (0x689) ) )
-  {
-    bool cruise_engaged = GET_BIT(to_push, 17U) != 0U;
-    pcm_cruise_check(cruise_engaged);
-    generic_rx_checks(true); //addr == 0x180
+    if (addr == 0x689) {
+      // 17th bit is CRUISE_ACTIVE
+      bool cruise_engaged = GET_BIT(to_push, 17U) != 0U;
+      pcm_cruise_check(cruise_engaged);
+    }
+    generic_rx_checks((addr == 0x180));
   }
+
+
+  // if(valid && (GET_ADDR(to_push) == (0x689) ) )
+  // {
+  //   bool cruise_engaged = GET_BIT(to_push, 17U) != 0U;
+  //   pcm_cruise_check(cruise_engaged);
+  //   generic_rx_checks(true); //addr == 0x180
+  // }
 
   
   return valid;
