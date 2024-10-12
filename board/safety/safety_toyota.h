@@ -124,7 +124,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
       }
     }
 
-    if(toyota_steering_bus)
+    if(toyota_driving_bus)
     {
       //Lexus_LS Wheel Speeds check
       if (addr == 0xB0 || addr == 0xB2) {
