@@ -23,6 +23,7 @@ const LongitudinalLimits TOYOTA_LONG_LIMITS = {
 
 const int TOYOTA_FLAG_STEERING_BUS = 1;
 const int TOYOTA_FLAG_DRIVING_BUS = 2;
+const int TOYOTA_FLAG_DRIVING_BUS = 3;
 
 // panda interceptor threshold needs to be equivalent to openpilot threshold to avoid controls mismatches
 // If thresholds are mismatched then it is possible for panda to see the gas fall and rise while openpilot is in the pre-enabled state
@@ -35,13 +36,16 @@ const int TOYOTA_GAS_INTERCEPTOR_THRSLD = 805;
 //                                  {0x2E4, 0, 5}, {0x191, 0, 8}, {0x411, 0, 8}, {0x412, 0, 8}, {0x343, 0, 8}, {0x1D2, 0, 8},  // LKAS + ACC
 //                                  {0x200, 0, 6}};  // interceptor
 
-const CanMsg TOYOTA_STR_TX_MSGS[] = {{0x180, 0, 5}, {0x689, 0, 8}};  //STEERING COMMAND
+const CanMsg TOYOTA_STR_TX_MSGS[] = {{0x180, 0, 5}};  //STEERING COMMAND
 
 // DSU_DIAG_REQ_MSG would not get sent out until the CAN BUS was changed to CAN 2
-const CanMsg TOYOTA_DRV_TX_MSGS[] = {{0x280, 0, 8}, {0x790, 2, 8}, {0x689, 0, 8} };  // ACC_COMMAND
+const CanMsg TOYOTA_DRV_TX_MSGS[] = {{0x280, 0, 8}, {0x790, 2, 8} };  // ACC_COMMAND
+
+const CanMsg TOYOTA_BDY_TX_MSGS[] = {{0x689, 0, 8}};  //RADAR ACTIVE
 
 #define TOYOTA_STR_TX_LEN (sizeof(TOYOTA_STR_TX_MSGS) / sizeof(TOYOTA_STR_TX_MSGS[0]))
 #define TOYOTA_DRV_TX_LEN (sizeof(TOYOTA_DRV_TX_MSGS) / sizeof(TOYOTA_DRV_TX_MSGS[0]))
+#define TOYOTA_DRV_TX_LEN (sizeof(TOYOTA_BDY_TX_MSGS) / sizeof(TOYOTA_BDY_TX_MSGS[0]))
 
 AddrCheckStruct toyota_steering_bus_addr_checks[] = {
   {.msg = {{0x260, 0, 8, .check_checksum = true, .expected_timestep = 20000U}, { 0 }, { 0 }}},
@@ -59,6 +63,11 @@ AddrCheckStruct toyota_driving_bus_addr_checks[] = {
 };
 addr_checks toyota_driving_bus_rx_checks = SET_ADDR_CHECKS(toyota_driving_bus_addr_checks);
 
+AddrCheckStruct toyota_body_bus_addr_checks[] = {
+  {.msg = {{0x689, 1, 8, .check_checksum = false, .expected_timestep = 1000000U}, { 0 }, { 0 }}},
+};
+addr_checks toyota_body_bus_rx_checks = SET_ADDR_CHECKS(toyota_body_bus_addr_checks);
+
 // safety param flags
 // first byte is for eps factor, second is for flags
 const uint32_t TOYOTA_PARAM_OFFSET = 8U;
@@ -74,6 +83,7 @@ int toyota_dbc_eps_torque_factor = 100;   // conversion factor for STEER_TORQUE_
 
 bool toyota_steering_bus = false;
 bool toyota_driving_bus = false;  // Are we the second panda intercepting the driving bus?
+bool toyota_body_bus = false;  // Are we the third panda intercepting the body bus?
 
 static uint32_t toyota_compute_checksum(CANPacket_t *to_push) {
   int addr = GET_ADDR(to_push);
@@ -92,14 +102,21 @@ static uint32_t toyota_get_checksum(CANPacket_t *to_push) {
 
 static int toyota_rx_hook(CANPacket_t *to_push) {
 
-  bool valid = addr_safety_check(to_push, toyota_driving_bus ? (&toyota_driving_bus_rx_checks ) : (&toyota_steering_bus_rx_checks ),
-                                 toyota_get_checksum, toyota_compute_checksum, NULL, NULL);
+  if (toyota_steering_bus)
+    bool valid = addr_safety_check(to_push, &toyota_steering_bus_rx_checks, toyota_get_checksum, toyota_compute_checksum, NULL, NULL);
+  else if (toyota_driving_bus)
+    bool valid = addr_safety_check(to_push, &toyota_driving_bus_rx_checks, toyota_get_checksum, toyota_compute_checksum, NULL, NULL);
+  else (toyota_body_bus)
+    bool valid = addr_safety_check(to_push, &toyota_body_bus_rx_checks, toyota_get_checksum, toyota_compute_checksum, NULL, NULL);
+
+  // bool valid = addr_safety_check(to_push, toyota_driving_bus ? (&toyota_driving_bus_rx_checks ) : (&toyota_steering_bus_rx_checks ),
+  //                                toyota_get_checksum, toyota_compute_checksum, NULL, NULL);
 
 
   if (valid && (GET_BUS(to_push) == 0U)) {
     int addr = GET_ADDR(to_push);
 
-    if(!toyota_driving_bus)
+    if(toyota_steering_bus)
     {
     // get eps motor torque (0.66 factor in dbc)
       if (addr == 0x260) {
@@ -124,7 +141,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
       }
     }
 
-    if(toyota_steering_bus)
+    if(toyota_drving_bus)
     {
       //Lexus_LS Wheel Speeds check
       if (addr == 0xB0 || addr == 0xB2) {
@@ -139,7 +156,6 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
         }
       }
     }
-
     generic_rx_checks((addr == 0x180));
   }
 
@@ -205,7 +221,7 @@ static int toyota_tx_hook(CANPacket_t *to_send) {
     }
   }
 
-  if(!toyota_driving_bus)
+  if(toyota_steering_bus)
   {
     // STEER: safety check on bytes 2-3
     if (addr == 0x180) {
@@ -220,6 +236,11 @@ static int toyota_tx_hook(CANPacket_t *to_send) {
         tx = 0;
       }
     }
+  }
+
+  if(toyota_body_bus)
+  {
+    tx = 1;
   }
 
 
@@ -308,6 +329,7 @@ static const addr_checks* toyota_init(uint16_t param) {
 
   toyota_steering_bus = GET_FLAG(param, TOYOTA_FLAG_STEERING_BUS);
   toyota_driving_bus = GET_FLAG(param, TOYOTA_FLAG_DRIVING_BUS);
+  toyota_body_bus = GET_FLAG(param, TOYOTA_FLAG_BODY_BUS);
 
 #ifdef ALLOW_DEBUG
   toyota_lta = GET_FLAG(param, TOYOTA_PARAM_LTA);
