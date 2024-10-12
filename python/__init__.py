@@ -194,8 +194,9 @@ class Panda:
   FLAG_TOYOTA_STOCK_LONGITUDINAL = (2 << 8)
   FLAG_TOYOTA_LTA = (4 << 8)
 
-  FLAG_TOYOTA_STEERING_BUS = 1
-  FLAG_TOYOTA_DRIVING_BUS = 2
+  # Use upper nibble of second byte to define which BUS the Pandas are connected to
+  FLAG_TOYOTA_STEERING_BUS = (16 << 8)
+  FLAG_TOYOTA_DRIVING_BUS = (32 << 8)
 
   FLAG_HONDA_ALT_BRAKE = 1
   FLAG_HONDA_BOSCH_LONG = 2
