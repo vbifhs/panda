@@ -45,7 +45,7 @@ const CanMsg TOYOTA_BDY_TX_MSGS[] = {{0x689, 0, 8}};  //RADAR ACTIVE
 
 #define TOYOTA_STR_TX_LEN (sizeof(TOYOTA_STR_TX_MSGS) / sizeof(TOYOTA_STR_TX_MSGS[0]))
 #define TOYOTA_DRV_TX_LEN (sizeof(TOYOTA_DRV_TX_MSGS) / sizeof(TOYOTA_DRV_TX_MSGS[0]))
-#define TOYOTA_DRV_TX_LEN (sizeof(TOYOTA_BDY_TX_MSGS) / sizeof(TOYOTA_BDY_TX_MSGS[0]))
+#define TOYOTA_BDY_TX_LEN (sizeof(TOYOTA_BDY_TX_MSGS) / sizeof(TOYOTA_BDY_TX_MSGS[0]))
 
 AddrCheckStruct toyota_steering_bus_addr_checks[] = {
   {.msg = {{0x260, 0, 8, .check_checksum = true, .expected_timestep = 20000U}, { 0 }, { 0 }}},
