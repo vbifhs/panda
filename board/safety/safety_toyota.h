@@ -157,7 +157,6 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
         }
       }
     }
-    generic_rx_checks((addr == 0x180));
   }
 
 
@@ -180,7 +179,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
     pcm_cruise_check(cruise_engaged);
   }
 
-
+  generic_rx_checks((addr == 0x180));
   return valid;
 }
 
