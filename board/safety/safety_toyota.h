@@ -99,7 +99,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
   if (valid && (GET_BUS(to_push) == 0U)) {
     int addr = GET_ADDR(to_push);
 
-    if(!toyota_driving_bus)
+    if(toyota_driving_bus)
     {
     // get eps motor torque (0.66 factor in dbc)
       if (addr == 0x260) {
@@ -124,7 +124,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
       }
     }
 
-    if(toyota_driving_bus)
+    if(toyota_steering_bus)
     {
       //Lexus_LS Wheel Speeds check
       if (addr == 0xB0 || addr == 0xB2) {
