@@ -23,7 +23,7 @@ const LongitudinalLimits TOYOTA_LONG_LIMITS = {
 
 const int TOYOTA_FLAG_STEERING_BUS = 1;
 const int TOYOTA_FLAG_DRIVING_BUS = 2;
-const int TOYOTA_FLAG_DRIVING_BUS = 3;
+const int TOYOTA_FLAG_BODY_BUS = 3;
 
 // panda interceptor threshold needs to be equivalent to openpilot threshold to avoid controls mismatches
 // If thresholds are mismatched then it is possible for panda to see the gas fall and rise while openpilot is in the pre-enabled state
