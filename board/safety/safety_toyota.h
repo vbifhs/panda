@@ -107,8 +107,8 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
     valid = addr_safety_check(to_push, &toyota_steering_bus_rx_checks, toyota_get_checksum, toyota_compute_checksum, NULL, NULL);}
   else if (toyota_driving_bus){
     valid = addr_safety_check(to_push, &toyota_driving_bus_rx_checks, toyota_get_checksum, toyota_compute_checksum, NULL, NULL);}
-  // else if (toyota_body_bus){
-  //   valid = addr_safety_check(to_push, &toyota_body_bus_rx_checks, toyota_get_checksum, toyota_compute_checksum, NULL, NULL);}
+  else if (toyota_body_bus){
+    valid = addr_safety_check(to_push, &toyota_body_bus_rx_checks, toyota_get_checksum, toyota_compute_checksum, NULL, NULL);}
 
   // bool valid = addr_safety_check(to_push, toyota_driving_bus ? (&toyota_driving_bus_rx_checks ) : (&toyota_steering_bus_rx_checks ),
   //                                toyota_get_checksum, toyota_compute_checksum, NULL, NULL);
