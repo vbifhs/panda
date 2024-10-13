@@ -325,6 +325,7 @@ static int toyota_tx_hook(CANPacket_t *to_send) {
 }
 
 static const addr_checks* toyota_init(uint16_t param) {
+  addr_checks* bus_rx_chks;
   toyota_alt_brake = GET_FLAG(param, TOYOTA_PARAM_ALT_BRAKE);
   toyota_stock_longitudinal = GET_FLAG(param, TOYOTA_PARAM_STOCK_LONGITUDINAL);
   toyota_dbc_eps_torque_factor = param & TOYOTA_EPS_FACTOR;
@@ -339,11 +340,13 @@ static const addr_checks* toyota_init(uint16_t param) {
   toyota_lta = false;
 #endif
   if (toyota_steering_bus)
-    return &toyota_steering_bus_rx_checks;
+    bus_rx_chks = &toyota_steering_bus_rx_checks;
   else if (toyota_driving_bus)
-    return &toyota_driving_bus_rx_checks;
+    bus_rx_chks = &toyota_driving_bus_rx_checks;
   else if (toyota_body_bus)
-    return &toyota_body_bus_rx_checks;
+    bus_rx_chks = &toyota_body_bus_rx_checks;
+  
+  return bus_rx_chks; 
   //return toyota_driving_bus ? (&toyota_driving_bus_rx_checks) : (&toyota_steering_bus_rx_checks);
 }
 
