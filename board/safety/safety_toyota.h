@@ -37,7 +37,7 @@ const int TOYOTA_GAS_INTERCEPTOR_THRSLD = 805;
 const CanMsg TOYOTA_STR_TX_MSGS[] = {{0x180, 0, 5}};  //STEERING COMMAND
 
 // DSU_DIAG_REQ_MSG would not get sent out until the CAN BUS was changed to CAN 2
-const CanMsg TOYOTA_DRV_TX_MSGS[] = {{0x280, 0, 8}, {0x790, 2, 8} };  // ACC_COMMAND
+const CanMsg TOYOTA_DRV_TX_MSGS[] = {{0x280, 0, 8}};  // ACC_COMMAND
 
 #define TOYOTA_STR_TX_LEN (sizeof(TOYOTA_STR_TX_MSGS) / sizeof(TOYOTA_STR_TX_MSGS[0]))
 #define TOYOTA_DRV_TX_LEN (sizeof(TOYOTA_DRV_TX_MSGS) / sizeof(TOYOTA_DRV_TX_MSGS[0]))
@@ -66,7 +66,7 @@ const uint32_t TOYOTA_PARAM_ALT_BRAKE = 1U << TOYOTA_PARAM_OFFSET;
 const uint32_t TOYOTA_PARAM_STOCK_LONGITUDINAL = 2U << TOYOTA_PARAM_OFFSET;
 const uint32_t TOYOTA_PARAM_LTA = 4U << TOYOTA_PARAM_OFFSET;
 const uint32_t TOYOTA_FLAG_STEERING_BUS = 16U << TOYOTA_PARAM_OFFSET;  //Flag 2nd Byte, 4th bit
-const uint32_t TOYOTA_FLAG_DRIVING_BUS = 32U << TOYOTA_PARAM_OFFSET;  //Flag 2nd Byte, 5th bit
+const uint32_t TOYOTA_FLAG_DRIVING_BUS = 32U << TOYOTA_PARAM_OFFSET;   //Flag 2nd Byte, 5th bit
 
 bool toyota_alt_brake = false;
 bool toyota_stock_longitudinal = false;
@@ -125,7 +125,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
       }
     }
 
-    if(toyota_driving_bus)
+    if(0U)
     {
       //Lexus_LS Wheel Speeds check
       if (addr == 0xB0 || addr == 0xB2) {
