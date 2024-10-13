@@ -201,7 +201,7 @@ void can_init_all(void) {
     // The addresses where the unique ID is stored is different for the STM32F7 (Tres Panda) than the STM32F4 (Black Panda)
     if(memcmp(current_board->board_type, hex_values, 0x05) == 0)
     {
-      if( (*uid0 == 0x00B40022) && ((bus_config[i].bus_lookup == 0U) || (bus_config[i].bus_lookup == 2U))  )
+      if( (*uid0 == 0x003E000F) && ((bus_config[i].bus_lookup == 0U) || (bus_config[i].bus_lookup == 2U))  )
       {
         bus_config[i].can_speed = 2500U;
       }
