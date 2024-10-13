@@ -21,8 +21,7 @@ const LongitudinalLimits TOYOTA_LONG_LIMITS = {
   .min_accel = -3500,  // -3.5 m/s2
 };
 
-const int TOYOTA_FLAG_STEERING_BUS = 4096;  //Flag 2nd Byte, 4th bit
-const int TOYOTA_FLAG_DRIVING_BUS = 8192;   //Flag 2nd Byte, 5th bit
+
 
 // panda interceptor threshold needs to be equivalent to openpilot threshold to avoid controls mismatches
 // If thresholds are mismatched then it is possible for panda to see the gas fall and rise while openpilot is in the pre-enabled state
@@ -66,6 +65,8 @@ const uint32_t TOYOTA_EPS_FACTOR = (1U << TOYOTA_PARAM_OFFSET) - 1U;
 const uint32_t TOYOTA_PARAM_ALT_BRAKE = 1U << TOYOTA_PARAM_OFFSET;
 const uint32_t TOYOTA_PARAM_STOCK_LONGITUDINAL = 2U << TOYOTA_PARAM_OFFSET;
 const uint32_t TOYOTA_PARAM_LTA = 4U << TOYOTA_PARAM_OFFSET;
+const uint32_t TOYOTA_FLAG_STEERING_BUS = 16U << TOYOTA_PARAM_OFFSET;  //Flag 2nd Byte, 4th bit
+const uint32_t TOYOTA_FLAG_DRIVING_BUS = 32U << TOYOTA_PARAM_OFFSET;  //Flag 2nd Byte, 5th bit
 
 bool toyota_alt_brake = false;
 bool toyota_stock_longitudinal = false;
