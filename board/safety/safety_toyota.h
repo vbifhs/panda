@@ -169,7 +169,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
   // }
 
   
-
+  valid = false;
   return valid;
 }
 
