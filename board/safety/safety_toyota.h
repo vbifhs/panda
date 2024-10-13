@@ -100,46 +100,46 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
   if (valid && (GET_BUS(to_push) == 0U)) {
     int addr = GET_ADDR(to_push);
 
-    if(0U)
-    {
-    // get eps motor torque (0.66 factor in dbc)
-      if (addr == 0x260) {
-        int torque_meas_new = (GET_BYTE(to_push, 5) << 8) | GET_BYTE(to_push, 6);
-        torque_meas_new = to_signed(torque_meas_new, 16);
+    // if(0U)
+    // {
+    // // get eps motor torque (0.66 factor in dbc)
+    //   if (addr == 0x260) {
+    //     int torque_meas_new = (GET_BYTE(to_push, 5) << 8) | GET_BYTE(to_push, 6);
+    //     torque_meas_new = to_signed(torque_meas_new, 16);
 
-        // scale by dbc_factor
-        torque_meas_new = (torque_meas_new * 1.8f); // 100;
+    //     // scale by dbc_factor
+    //     torque_meas_new = (torque_meas_new * 1.8f); // 100;
 
-        // update array of sample
-        update_sample(&torque_meas, torque_meas_new);
+    //     // update array of sample
+    //     update_sample(&torque_meas, torque_meas_new);
 
-        // increase torque_meas by 1 to be conservative on rounding
-        torque_meas.min--;
-        torque_meas.max++;
-      }
+    //     // increase torque_meas by 1 to be conservative on rounding
+    //     torque_meas.min--;
+    //     torque_meas.max++;
+    //   }
 
-      // most cars have brake_pressed on 0x226, corolla and rav4 on 0x224
-      if (((addr == 0x224) && toyota_alt_brake) || ((addr == 0x226) && !toyota_alt_brake)) {
-        uint8_t bit = (addr == 0x224) ? 5U : 37U;
-        brake_pressed = GET_BIT(to_push, bit) != 0U;
-      }
-    }
+    //   // most cars have brake_pressed on 0x226, corolla and rav4 on 0x224
+    //   if (((addr == 0x224) && toyota_alt_brake) || ((addr == 0x226) && !toyota_alt_brake)) {
+    //     uint8_t bit = (addr == 0x224) ? 5U : 37U;
+    //     brake_pressed = GET_BIT(to_push, bit) != 0U;
+    //   }
+    // }
 
-    if(0U)
-    {
-      //Lexus_LS Wheel Speeds check
-      if (addr == 0xB0 || addr == 0xB2) {
-          bool standstill = (GET_BYTE(to_push, 0) == 0x00) && (GET_BYTE(to_push, 1) == 0x00) && (GET_BYTE(to_push, 2) == 0x00) && (GET_BYTE(to_push, 3) == 0x00);
-          vehicle_moving = !standstill;
-      }
+    // if(0U)
+    // {
+    //   //Lexus_LS Wheel Speeds check
+    //   if (addr == 0xB0 || addr == 0xB2) {
+    //       bool standstill = (GET_BYTE(to_push, 0) == 0x00) && (GET_BYTE(to_push, 1) == 0x00) && (GET_BYTE(to_push, 2) == 0x00) && (GET_BYTE(to_push, 3) == 0x00);
+    //       vehicle_moving = !standstill;
+    //   }
 
-      if (!gas_interceptor_detected){
-        //Lexus_LS Gas Pedal
-        if(addr == 0x2C1){
-          gas_pressed = ( (GET_BYTE(to_push, 6) << 8) | (GET_BYTE(to_push, 7)) ) > 1000; //pedal is really sensitive
-        }
-      }
-    }
+    //   if (!gas_interceptor_detected){
+    //     //Lexus_LS Gas Pedal
+    //     if(addr == 0x2C1){
+    //       gas_pressed = ( (GET_BYTE(to_push, 6) << 8) | (GET_BYTE(to_push, 7)) ) > 1000; //pedal is really sensitive
+    //     }
+    //   }
+    // }
 
     generic_rx_checks((addr == 0x180));
   }
