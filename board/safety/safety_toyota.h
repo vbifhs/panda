@@ -21,10 +21,6 @@ const LongitudinalLimits TOYOTA_LONG_LIMITS = {
   .min_accel = -3500,  // -3.5 m/s2
 };
 
-const int TOYOTA_FLAG_STEERING_BUS = 181;
-const int TOYOTA_FLAG_DRIVING_BUS = 3;
-const int TOYOTA_FLAG_BODY_BUS = 7;
-
 // panda interceptor threshold needs to be equivalent to openpilot threshold to avoid controls mismatches
 // If thresholds are mismatched then it is possible for panda to see the gas fall and rise while openpilot is in the pre-enabled state
 // Threshold calculated from DBC gains: round((((15 + 75.555) / 0.159375) + ((15 + 151.111) / 0.159375)) / 2) = 805
@@ -75,6 +71,9 @@ const uint32_t TOYOTA_EPS_FACTOR = (1U << TOYOTA_PARAM_OFFSET) - 1U;
 const uint32_t TOYOTA_PARAM_ALT_BRAKE = 1U << TOYOTA_PARAM_OFFSET;
 const uint32_t TOYOTA_PARAM_STOCK_LONGITUDINAL = 2U << TOYOTA_PARAM_OFFSET;
 const uint32_t TOYOTA_PARAM_LTA = 4U << TOYOTA_PARAM_OFFSET;
+const uint32_t TOYOTA_FLAG_STEERING_BUS = 16U << TOYOTA_PARAM_OFFSET;
+const uint32_t TOYOTA_FLAG_DRIVING_BUS = 32U << TOYOTA_PARAM_OFFSET;
+const uint32_t TOYOTA_FLAG_BODY_BUS = 64U << TOYOTA_PARAM_OFFSET;
 
 bool toyota_alt_brake = false;
 bool toyota_stock_longitudinal = false;
@@ -140,6 +139,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
         uint8_t bit = (addr == 0x224) ? 5U : 37U;
         brake_pressed = GET_BIT(to_push, bit) != 0U;
       }
+      //generic_rx_checks((addr == 0x180));
     }
 
     if(toyota_driving_bus)
@@ -156,6 +156,7 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
           gas_pressed = ( (GET_BYTE(to_push, 6) << 8) | (GET_BYTE(to_push, 7)) ) > 1000; //pedal is really sensitive
         }
       }
+      //generic_rx_checks((addr == 0x180));
     }
   }
 
@@ -337,7 +338,13 @@ static const addr_checks* toyota_init(uint16_t param) {
 #else
   toyota_lta = false;
 #endif
-  return toyota_driving_bus ? (&toyota_driving_bus_rx_checks) : (&toyota_steering_bus_rx_checks);
+  if (toyota_steering_bus)
+    return &toyota_steering_bus_rx_checks;
+  else if (toyota_driving_bus)
+    return &toyota_driving_bus_rx_checks;
+  else if (toyota_body_bus)
+    return &toyota_body_bus_rx_checks;
+  //return toyota_driving_bus ? (&toyota_driving_bus_rx_checks) : (&toyota_steering_bus_rx_checks);
 }
 
 static int toyota_fwd_hook(int bus_num, int addr) {
