@@ -182,18 +182,13 @@ void can_init_all(void) {
   bool ret = true;
   //const unsigned char hex_values[] = {0x54, 0x72, 0x65, 0x73}; // "Tres"
   const unsigned char hex_values[] = {0x42, 0x6C, 0x61, 0x63, 0x6B};// "Black"
+  volatile uint32_t* uid0 = (uint32_t*)(0x1FFF7A10);
 
   //First Panda
   //const uint32_t id0 = 0x28001B00;
   // const uint32_t id1 = 0x17513234;
   // const uint32_t id2 = 0x30373133;
   //const uint32_t id0 = 0x34000D00;
-  const uint32_t id0 = 0x00D00034;
-  //const uint32_t id1 = 0x0B503054;
-  //const uint32_t id2 = 0x38343920;
-  uint32_t uid0;
-  // uint32_t uid1;
-  // uint32_t uid2;
 
   
   for (uint8_t i=0U; i < PANDA_CAN_CNT; i++) {
@@ -201,16 +196,12 @@ void can_init_all(void) {
       bus_config[i].can_data_speed = 0U;
     }
 
-    //If 3rd panda (2nd External panda), For CAN0 and CAN2 set to 250kbps for Body BUS communication
-    //Make sure the current board is the "Black" panda and not the internal Panda in the C3X
-    //The addresses where the unique ID is stored is different for the STM32F7 (Tres Panda) than the STM32F4 (Black Panda)
+    // If 3rd panda (2nd External panda), For CAN0 and CAN2 set to 250kbps for Body BUS communication
+    // Make sure the current board is the "Black" panda and not the internal Panda in the C3X
+    // The addresses where the unique ID is stored is different for the STM32F7 (Tres Panda) than the STM32F4 (Black Panda)
     if(memcmp(current_board->board_type, hex_values, 0x05) == 0)
     {
-      uid0 = (*((volatile uint32_t*)(0x1FFF7A10)));  // UID[0]
-      //uid1 = *(uint32_t*)(0x1FFF7A14);  // UID[1]
-      //uid2 = *(uint32_t*)(0x1FFF7A18);  // UID[2]
-    
-      if( (uid0 == id0) && ((bus_config[i].bus_lookup == 0U) || (bus_config[i].bus_lookup == 2U))  )
+      if( (*uid0 == 0x001B0028) && ((bus_config[i].bus_lookup == 0U) || (bus_config[i].bus_lookup == 2U))  )
       {
         bus_config[i].can_speed = 2500U;
       }
