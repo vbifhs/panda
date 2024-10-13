@@ -97,8 +97,8 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
                                  toyota_get_checksum, toyota_compute_checksum, NULL, NULL);
 
 
-  if (valid && (GET_BUS(to_push) == 0U)) {
-    int addr = GET_ADDR(to_push);
+  //if (valid && (GET_BUS(to_push) == 0U)) {
+    //int addr = GET_ADDR(to_push);
 
     // if(0U)
     // {
@@ -141,8 +141,8 @@ static int toyota_rx_hook(CANPacket_t *to_push) {
     //   }
     // }
 
-    generic_rx_checks((addr == 0x180));
-  }
+   //generic_rx_checks((addr == 0x180));
+  //}
 
 
 
